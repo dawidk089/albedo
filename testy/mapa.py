@@ -12,35 +12,19 @@ class MainWindow(QtGui.QWidget):
     def __init__(self):
         super(MainWindow, self).__init__()
 
-        self.header = QLabel('<h1><b>Nauka indywidualna</b></h1>', self)
-        self.map = Map(3, 3)
+        self.map = Map(100, 100)
         self.map.init_pixels(0, 0, 0)
         self.map.set_pixels()
 
-        self.initUI()
+        self.label = QtGui.QLabel()
+        self.label.setPixmap(QPixmap.fromImage(self.map.get()))
 
-    # inicjalizacja widget'ow i layout'u
-    def initUI(self):
+        hbox = QtGui.QHBoxLayout()
+        vbox = QtGui.QVBoxLayout()
+        hbox.addWidget(self.label)
+        vbox.addLayout(hbox)
+        self.setLayout(vbox)
 
-        #layout
-        header_l = [
-            ('stretch',),
-            ('widget', self.header),
-            ('stretch',),
-        ]
-
-        self.header_box = self.box('horizontal', header_l)
-
-        main_l = [
-            ('layout', self.header_box),
-            ('widget', self.map.get()),
-        ]
-
-        self.mainbox = self.box('vertical', main_l)
-
-        self.setLayout(self.mainbox)
-
-        self.show()
 
     # definicja podpiec
     def slot_conn(self, slots={}):
@@ -67,3 +51,9 @@ class MainWindow(QtGui.QWidget):
                 box.addStretch(1)
 
         return box
+
+if __name__ == '__main__':
+    app = QtGui.QApplication([])
+    window = MainWindow()
+    window.show()
+    app.exec_()
