@@ -12,10 +12,15 @@ class MainWindow(QtGui.QWidget):
     def __init__(self):
         super(MainWindow, self).__init__()
 
-        self.header = QLabel('<h1><b>Nauka indywidualna</b></h1>', self)
-        self.map = Map(3, 3)
+        self.header = QLabel('<h1><b>Albedo Ziemi</b></h1>', self)
+
+        self.map = Map(800, 600)
         self.map.init_pixels(0, 0, 0)
         self.map.set_pixels()
+        self.map_item = QtGui.QLabel()
+        self.map_item.setPixmap(QPixmap.fromImage(self.map.get()))
+
+        self
 
         self.initUI()
 
@@ -33,7 +38,7 @@ class MainWindow(QtGui.QWidget):
 
         main_l = [
             ('layout', self.header_box),
-            ('widget', self.map.get()),
+            ('widget', self.map_item),
         ]
 
         self.mainbox = self.box('vertical', main_l)
