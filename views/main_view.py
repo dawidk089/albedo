@@ -21,21 +21,10 @@ class MainWindow(QtGui.QWidget):
         self.width_editline = 100
 
         # utworzenie obiektu pod wywolanie symulatora
-        self.wywolanie = Calling(p()+'/symulator/wersja6')
+        self.wywolanie = Calling('../symulator/')
         
         # naglowek
         self.header = QLabel('<h1><b>Albedo Ziemi</b></h1>', self)
-
-        # mapa
-        """
-        # # odczyt pliku
-        self.map_data = DataStorage('../../dane/temperatura_0.txt')
-        self.x = self.map_data.rows
-        self.y = self.map_data.columns
-
-        self.min_temp = float('inf')
-        self.max_temp = 0
-        """
 
         # # zadeklarowanie wymiarow mapy
         #self.map = Map(self.x, self.y)
@@ -45,17 +34,6 @@ class MainWindow(QtGui.QWidget):
         self.rgb = []
         self.map.init_pixels0()
 
-        """
-        self.temp_to_rgb()
-
-        #zmieniam recznie max, min
-        #self.min_temp = 300
-        #self.max_temp = 400
-
-        # # definicja obrazu mapy
-        self.range_temp = self.max_temp-self.min_temp
-        self.map.init_pixels(self.rgb, self.min_temp, self.range_temp)
-        """
         # # nalozenie obrazu na mape
         self.map.set_pixels()
 
@@ -244,11 +222,6 @@ class MainWindow(QtGui.QWidget):
     # definicje funkcji podpinanych do przyciskow
     def generate(self):
         self.generate_map()
-        """
-        self.map.pixel[5][5] = qRgb(0, 0, 0)
-        self.map.map.setPixel(5, 5, self.map.pixel[5][5])
-        self.map_item.setPixmap(QPixmap.fromImage(self.map.map))
-        """
         print('generuje')
 
     def kill(self):
@@ -355,7 +328,7 @@ class MainWindow(QtGui.QWidget):
 
         # # odczyt pliku
         self.map_data = None
-        self.map_data = DataStorage('../../wersja6/temperatura_0.txt')
+        self.map_data = DataStorage('symulator/temperatura_0.txt')
         self.x = self.map_data.rows
         self.y = self.map_data.columns
 

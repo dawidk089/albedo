@@ -4,13 +4,14 @@ from subprocess import call
 import os
 import subprocess
 import time
+from paths import project_path as p
 
 
 class Calling:
-    def __init__(self, path):
+    def __init__(self, path_to_simulator):
 
         self.calls_parameters = {
-            'path': path,
+            'path': path_to_simulator,
             'ilosc_poludnikow': 100,
             'ilosc_rownoleznikow': 100,
             'stala_sloneczna': 1300,
@@ -61,13 +62,10 @@ class Calling:
 
     def run(self):
         calling = ''
-        calling += 'pwd '
-        calling += '&& '
-        calling += 'cd '
-        calling += self.calls_parameters['path']
-        calling += ' && '
-        calling += 'pwd '
-        calling += '&& '
+        calling += 'pwd' + '\n'
+        calling += 'cd ' + self.calls_parameters['path'] + '\n'
+        calling += 'pwd' + '\n'
+
         calling += './main '
         calling += str(self.calls_parameters['ilosc_poludnikow']) + ' '
         calling += str(self.calls_parameters['ilosc_rownoleznikow']) + ' '
@@ -84,13 +82,17 @@ class Calling:
         calling += str(self.calls_parameters['cieplo_wlasciwe_lad']) + ' '
         calling += str(self.calls_parameters['cieplo_wlasciwe_morze'])
 
-        print('calling:', calling)
+        print('>calling:\n\n', calling, '\n')
         open('calling.sh', 'w').write("#!/bin/bash\n\n"+calling)
 
+        print('>execute ls -l\n')
         execute(['ls', '-l'])
-        execute(['./calling.sh'])
-        #execute()
 
+        print('\n>execute pwd\n')
+        execute(['pwd'])
+
+        print('\n>execute calling.sh\n')
+        execute(['./calling.sh'])
 
         #execute(calling)
         #execute('./period.sh')
@@ -102,10 +104,8 @@ def execute(command):
     for line in lines_iterator:
         print('line:', line) # yield line
 
-
-
 if __name__ == '__main__':
-    symulator = Calling('../wersja6')
+    symulator = Calling('../symulator')
     symulator.run()
 
 

@@ -16,7 +16,7 @@ class Main(QtGui.QMainWindow):
 
         #zaladowanie glownego okna
         main_window = MainWindow(self)
-        self.setWindowIcon(QtGui.QIcon(p()+'/image/app_ico.png'))
+        self.setWindowIcon(QtGui.QIcon('../image/app_ico.png'))
         self.setWindowTitle('World albedo')
         #self.resize(800, 600)
         self.showFullScreen()
