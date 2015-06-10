@@ -4,7 +4,7 @@ __author__ = 'mcmushroom'
 import sys
 from PyQt4 import QtGui, QtCore, Qt
 from PyQt4.QtGui import *
-from view.map import Map
+from model.map import Map
 
 
 class MainWindow(QtGui.QWidget):

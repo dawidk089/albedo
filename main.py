@@ -1,7 +1,8 @@
 __author__ = 'mcmushroom'
 
 from PyQt4 import QtCore, QtGui
-from view.main_view import MainWindow
+from views.main_view import MainWindow
+from paths import project_path as p
 
 
 class Main(QtGui.QMainWindow):
@@ -14,10 +15,11 @@ class Main(QtGui.QMainWindow):
         self.setCentralWidget(self.stacked_widget)
 
         #zaladowanie glownego okna
-        main_window = MainWindow()
-        self.setWindowIcon(QtGui.QIcon('../image/app_ico.png'))
+        main_window = MainWindow(self)
+        self.setWindowIcon(QtGui.QIcon(p()+'/image/app_ico.png'))
         self.setWindowTitle('World albedo')
-        self.resize(800, 600)
+        #self.resize(800, 600)
+        self.showFullScreen()
         self.center()
         self.stacked_widget.addWidget(main_window)
 

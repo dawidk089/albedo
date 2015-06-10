@@ -3,4 +3,5 @@
 *.log
 *.pyc
 .idea/
+junks
 __pycache__/
