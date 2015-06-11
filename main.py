@@ -1,5 +1,7 @@
 __author__ = 'mcmushroom'
 
+import sys
+sys.path.append("C:\\Python34\\Lib\\idlelib")
 from PyQt4 import QtCore, QtGui
 from views.main_view import MainWindow
 from models.data_storage import Paths
@@ -12,6 +14,7 @@ class Main(QtGui.QMainWindow):
 
         #sciezki
         self.path = Paths('apka')
+        print('path in main:', self.path.path)
 
         #tworzenie stosu widokow
         self.stacked_widget = QtGui.QStackedWidget()
@@ -40,8 +43,9 @@ class Main(QtGui.QMainWindow):
         cp = QtGui.QDesktopWidget().availableGeometry().center()
         qr.moveCenter(cp)
         self.move(qr.topLeft())
-
+import sys
 if __name__ == '__main__':
+    print(sys.path)
     app = QtGui.QApplication([])
     window = Main()
     window.show()

@@ -1,5 +1,6 @@
 __author__ = 'mcmushroom'
 import os, sys
+from check_system import check_system
 
 class DataStorage:
 
@@ -25,27 +26,40 @@ class DataStorage:
                 self.map_data.append(temp_tab)
 
 
-class Paths():
+class Paths:
     def __init__(self, main_project_folder_name):
         self.path = {
             'calls': None,
             'models': None,
             'simulator': None,
+            'simulator_win': None,
             'views': None,
             'master': None,
             }
 
         current_path = os.getcwd()
+
+        print('path in class Paths:', current_path)
+
+        levels = None
+        slash = None
         project_path = False
-        levels = current_path.split('/')
+        if check_system() == 'linux':
+            slash = '/'
+        elif check_system() == 'windows':
+            slash = '\\'
+
+        levels = current_path.split(slash)
+        print('level in path from class Paths:', levels)
+
         #print('is?:',  levels[-2] == main_project_folder_name)
         for level in reversed(levels):
             if level == main_project_folder_name:
                 project_path = ''
                 for level in levels:
-                    project_path += level + '/'
+                    project_path += level + slash
                 for key in self.path:
-                    self.path[key] = project_path + key + '/'
+                    self.path[key] = project_path + key + slash
                 break
             else:
                 del levels[-1]

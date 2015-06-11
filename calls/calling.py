@@ -5,7 +5,7 @@ import os
 import subprocess
 import time
 from models.data_storage import Paths
-
+from check_system import check_system
 
 class Calling:
     def __init__(self, path_to_simulator):
@@ -13,7 +13,7 @@ class Calling:
         self.path = Paths('apka')
 
         self.calls_parameters = {
-            'path': fix_path(path_to_simulator),
+            'path': path_to_simulator,
             'ilosc_poludnikow': 100,
             'ilosc_rownoleznikow': 100,
             'stala_sloneczna': 1300,
@@ -65,12 +65,22 @@ class Calling:
         """
 
     def run(self):
+        system = check_system()
+        if system == 'linux':
+            self.calls_parameters['path'] = fix_path(self.calls_parameters['path'])
+
         calling = ''
         calling += 'pwd' + '\n'
-        calling += 'cd ' + self.calls_parameters['path'] + '\n'
+        calling += 'cd '
+        if system == 'linux':
+            calling += self.calls_parameters['path'] + '\n'
+        elif system == 'windows':
+            calling += '"' + self.calls_parameters['path'] + '"' + '\n'
         calling += 'pwd' + '\n'
-
-        calling += './main '
+        if system == 'linux':
+            calling += './main '
+        elif system == 'windows':
+            calling += 'main.exe '
         calling += str(self.calls_parameters['ilosc_poludnikow']) + ' '
         calling += str(self.calls_parameters['ilosc_rownoleznikow']) + ' '
         calling += str(self.calls_parameters['stala_sloneczna']) + ' '
@@ -87,8 +97,13 @@ class Calling:
         calling += str(self.calls_parameters['cieplo_wlasciwe_morze'])
 
         print('>calling:\n\n', calling, '\n')
-        print('>file path:', self.path.path['simulator']+'calling.sh')
-        open(self.path.path['simulator']+'calling.sh', 'w').write("#!/bin/bash\n\n"+calling)
+
+        if system == 'linux':
+            print('>file path:', self.path.path['simulator']+'calling.sh')
+            open(self.path.path['simulator']+'calling.sh', 'w').write("#!/bin/bash\n\n"+calling)
+        elif system == 'windows':
+            print('>file path:', self.path.path['simulator']+'calling.bat')
+            open(self.path.path['simulator']+'calling.bat', 'w').write(calling)
 
         print('>execute ls -l\n')
         execute(['ls', '-l'])
@@ -96,12 +111,14 @@ class Calling:
         print('\n>execute pwd\n')
         execute(['pwd'])
 
-        print('\n>execute calling.sh\n')
-        execute([self.path.path['simulator']+'calling.sh'])
-
-        #execute(calling)
-        #execute('./period.sh')
-        #execute('pwd ')
+        if system == 'linux':
+            print('\n>execute calling.sh\n')
+            print(open(self.path.path['simulator']+'calling.sh', 'r').read())
+            execute([self.path.path['simulator']+'calling.sh'])
+        elif system == 'windows':
+            print('\n>execute calling.bat\n')
+            print(open(self.path.path['simulator']+'calling.bat', 'r').read())
+            execute([self.path.path['simulator']+'calling.bat'])
 
 def execute(command):
     popen = subprocess.Popen(command, stdout=subprocess.PIPE)

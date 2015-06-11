@@ -1,17 +1,18 @@
 # -*- coding: utf-8 -*-
 __author__ = 'mcmushroom'
 
-import sys
-from PyQt4 import QtGui, QtCore, Qt
-from PyQt4.QtGui import *
+from PyQt4 import QtGui, QtCore
 from models.map import Map
 from models.data_storage import DataStorage
 from calls.calling import Calling
+from check_system import check_system
 
 class MainWindow(QtGui.QWidget):
 
     def __init__(self, main, path):
         super(MainWindow, self).__init__()
+
+        print('>start init main_view')
 
         self.main = main
         self.path = path
@@ -20,10 +21,13 @@ class MainWindow(QtGui.QWidget):
         self.width_editline = 100
 
         # utworzenie obiektu pod wywolanie symulatora
-        self.wywolanie = Calling(self.path.path['simulator'])
+        if check_system() == 'linux':
+            self.wywolanie = Calling(self.path.path['simulator'])
+        elif check_system() == 'windows':
+            self.wywolanie = Calling(self.path.path['simulator_win'])
         
         # naglowek
-        self.header = QLabel('<h1><b>Albedo Ziemi</b></h1>', self)
+        self.header = QtGui.QLabel('<h1><b>Albedo Ziemi</b></h1>', self)
 
         # # zadeklarowanie wymiarow mapy
         #self.map = Map(self.x, self.y)
@@ -42,39 +46,39 @@ class MainWindow(QtGui.QWidget):
         self.height_map = self.screen_size()['h']*self.width_editline
 
         self.map_item.setScaledContents(True)
-        self.map_item.setPixmap(QPixmap.fromImage(self.map.map))
+        self.map_item.setPixmap(QtGui.QPixmap.fromImage(self.map.map))
 
         # check button
-        self.sun = QCheckBox('słońce')
-        self.emision = QCheckBox('emisja')
-        self.heat = QCheckBox('przewodnictwo')
+        self.sun = QtGui.QCheckBox('słońce')
+        self.emision = QtGui.QCheckBox('emisja')
+        self.heat = QtGui.QCheckBox('przewodnictwo')
 
         # editline
         self.editlines = {
-            'calls': QLineEdit(self),
-            'albedo_land': QLineEdit(self),
-            'albedo_sea': QLineEdit(self),
-            'coof_reemision': QLineEdit(self),
-            'coof_dyfusion': QLineEdit(self),
-            'sun_const': QLineEdit(self),
-            'meridian_amount': QLineEdit(self),
-            'parallel_amount': QLineEdit(self),
+            'calls': QtGui.QLineEdit(self),
+            'albedo_land': QtGui.QLineEdit(self),
+            'albedo_sea': QtGui.QLineEdit(self),
+            'coof_reemision': QtGui.QLineEdit(self),
+            'coof_dyfusion': QtGui.QLineEdit(self),
+            'sun_const': QtGui.QLineEdit(self),
+            'meridian_amount': QtGui.QLineEdit(self),
+            'parallel_amount': QtGui.QLineEdit(self),
         }
 
         # labels
         #self.meridian_amount = QLabel('ilość południków: '+str(0), self)
         #self.parallel_amount = QLabel('ilość równoleżników: '+str(0), self)
-        self.time = QLabel('czas: '+str(0), self)
+        self.time = QtGui.QLabel('czas: '+str(0), self)
 
         # button
         self.button = {}
 
-        self.button["generate"] = QPushButton('Generuj')
-        self.button["kill"] = QPushButton('Zabij')
+        self.button["generate"] = QtGui.QPushButton('Generuj')
+        self.button["kill"] = QtGui.QPushButton('Zabij')
 
         # napis
-        self.min_temp_value = QLabel(str(0), self)
-        self.max_temp_value = QLabel(str(float('inf')), self)
+        self.min_temp_value = QtGui.QLabel(str(0), self)
+        self.max_temp_value = QtGui.QLabel(str(float('inf')), self)
 
 
         #ustawienia
@@ -109,12 +113,12 @@ class MainWindow(QtGui.QWidget):
         self.header_box = self.box('horizontal', header_l)
 
         min_temp_l = [
-            ('widget', QLabel('temp min:', self)),
+            ('widget', QtGui.QLabel('temp min:', self)),
             ('widget', self.min_temp_value),
         ]
 
         max_temp_l = [
-            ('widget', QLabel('temp max:', self)),
+            ('widget', QtGui.QLabel('temp max:', self)),
             ('widget', self.max_temp_value),
         ]
 
@@ -130,21 +134,20 @@ class MainWindow(QtGui.QWidget):
             ('widget', self.heat),
 
         # editline
-            ('widget', QLabel('ilość wywołań', self)),
+            ('widget', QtGui.QLabel('ilość wywołań', self)),
             ('widget', self.editlines['calls']),
-            ('widget', QLabel('ilość południków', self)),
+            ('widget', QtGui.QLabel('ilość południków', self)),
             ('widget', self.editlines['meridian_amount']),
-            ('widget', QLabel('ilość równoleżników', self)),
+            ('widget', QtGui.QLabel('ilość równoleżników', self)),
             ('widget', self.editlines['parallel_amount']),
-            ('widget', QLabel('współczynnik albedo dla lądu', self)),
+            ('widget', QtGui.QLabel('współczynnik albedo dla lądu', self)),
             ('widget', self.editlines['albedo_land']),
-            ('widget', QLabel('współczynnik albedo dla morza', self)),
+            ('widget', QtGui.QLabel('współczynnik albedo dla morza', self)),
             ('widget', self.editlines['albedo_sea']),
-            ('widget', QLabel('współczynnik reemisji', self)),
             ('widget', self.editlines['coof_reemision']),
-            ('widget', QLabel('współczynnik dyfuzji', self)),
+            ('widget', QtGui.QLabel('współczynnik dyfuzji', self)),
             ('widget', self.editlines['coof_dyfusion']),
-            ('widget', QLabel('stała słoneczna', self)),
+            ('widget', QtGui.QLabel('stała słoneczna', self)),
             ('widget', self.editlines['sun_const']),
 
         # labels
@@ -322,12 +325,15 @@ class MainWindow(QtGui.QWidget):
             self.wywolanie.calls_parameters['fun_wymiana_ciepla'] = 0
 
 
-
         self.wywolanie.run()
 
         # # odczyt pliku
         self.map_data = None
-        self.map_data = DataStorage(self.path.path['simulator'] + 'temperatura_0.txt')
+        if check_system() == 'linux':
+            self.map_data = DataStorage(self.path.path['simulator'] + 'temperatura_0.txt')
+        elif check_system() == 'windows':
+           self.map_data = DataStorage(self.path.path['simulator_win'] + 'temperatura_0.txt')
+
         self.x = self.map_data.rows
         self.y = self.map_data.columns
 
@@ -360,14 +366,14 @@ class MainWindow(QtGui.QWidget):
         self.map.set_pixels()
 
         # # przypiecie obrazu
-        self.map_item.setPixmap(QPixmap.fromImage(self.map.map))
+        self.map_item.setPixmap(QtGui.QPixmap.fromImage(self.map.map))
 
         # # ustawianie napisow
         self.min_temp_value.setText(str(int(self.min_temp-273.15)))
         self.max_temp_value.setText(str(int(self.max_temp-273.15)))
 
     def screen_size(self):
-        rec = QApplication.desktop().screenGeometry()
+        rec = QtGui.QApplication.desktop().screenGeometry()
         height = rec.height()
         width = rec.width()
         return {'w': width, 'h': height}
