@@ -7,21 +7,20 @@ from PyQt4.QtGui import *
 from models.map import Map
 from models.data_storage import DataStorage
 from calls.calling import Calling
-from paths import project_path as p
-
 
 class MainWindow(QtGui.QWidget):
 
-    def __init__(self, main):
+    def __init__(self, main, path):
         super(MainWindow, self).__init__()
 
         self.main = main
+        self.path = path
 
         # init sets
         self.width_editline = 100
 
         # utworzenie obiektu pod wywolanie symulatora
-        self.wywolanie = Calling('../symulator/')
+        self.wywolanie = Calling(self.path.path['simulator'])
         
         # naglowek
         self.header = QLabel('<h1><b>Albedo Ziemi</b></h1>', self)
@@ -328,7 +327,7 @@ class MainWindow(QtGui.QWidget):
 
         # # odczyt pliku
         self.map_data = None
-        self.map_data = DataStorage('symulator/temperatura_0.txt')
+        self.map_data = DataStorage(self.path.path['simulator'] + 'temperatura_0.txt')
         self.x = self.map_data.rows
         self.y = self.map_data.columns
 
@@ -343,7 +342,7 @@ class MainWindow(QtGui.QWidget):
         #del map_old
         self.temp_to_rgb()
 
-        print('rgb:\n', self.rgb)
+        #print('rgb:\n', self.rgb)
 
         #zmieniam recznie max, min
         #self.min_temp = 300

@@ -4,14 +4,16 @@ from subprocess import call
 import os
 import subprocess
 import time
-from paths import project_path as p
+from models.data_storage import Paths
 
 
 class Calling:
     def __init__(self, path_to_simulator):
 
+        self.path = Paths('apka')
+
         self.calls_parameters = {
-            'path': path_to_simulator,
+            'path': fix_path(path_to_simulator),
             'ilosc_poludnikow': 100,
             'ilosc_rownoleznikow': 100,
             'stala_sloneczna': 1300,
@@ -27,6 +29,8 @@ class Calling:
             'cieplo_wlasciwe_lad': 5000,
             'cieplo_wlasciwe_morze': 30000,
         }
+
+        print('>fix path:', self.calls_parameters['path'])
         
     def run_and_go(self):
         calling = [
@@ -83,7 +87,8 @@ class Calling:
         calling += str(self.calls_parameters['cieplo_wlasciwe_morze'])
 
         print('>calling:\n\n', calling, '\n')
-        open('calling.sh', 'w').write("#!/bin/bash\n\n"+calling)
+        print('>file path:', self.path.path['simulator']+'calling.sh')
+        open(self.path.path['simulator']+'calling.sh', 'w').write("#!/bin/bash\n\n"+calling)
 
         print('>execute ls -l\n')
         execute(['ls', '-l'])
@@ -92,7 +97,7 @@ class Calling:
         execute(['pwd'])
 
         print('\n>execute calling.sh\n')
-        execute(['./calling.sh'])
+        execute([self.path.path['simulator']+'calling.sh'])
 
         #execute(calling)
         #execute('./period.sh')
@@ -104,8 +109,14 @@ def execute(command):
     for line in lines_iterator:
         print('line:', line) # yield line
 
+
+def fix_path(path):
+    return path.replace(' ', '\ ')
+
 if __name__ == '__main__':
-    symulator = Calling('../symulator')
+    print(fix_path('makarena/kamil drzazga/krol/css/html'))
+    exit(0)
+    symulator = Calling('../simulator/')
     symulator.run()
 
 

@@ -2,7 +2,7 @@ __author__ = 'mcmushroom'
 
 from PyQt4 import QtCore, QtGui
 from views.main_view import MainWindow
-from paths import project_path as p
+from models.data_storage import Paths
 
 
 class Main(QtGui.QMainWindow):
@@ -10,12 +10,15 @@ class Main(QtGui.QMainWindow):
     def __init__(self, parent=None):
         super(Main, self).__init__(parent)
 
+        #sciezki
+        self.path = Paths('apka')
+
         #tworzenie stosu widokow
         self.stacked_widget = QtGui.QStackedWidget()
         self.setCentralWidget(self.stacked_widget)
 
         #zaladowanie glownego okna
-        main_window = MainWindow(self)
+        main_window = MainWindow(self,  self.path)
         self.setWindowIcon(QtGui.QIcon('../image/app_ico.png'))
         self.setWindowTitle('World albedo')
         #self.resize(800, 600)
