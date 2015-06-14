@@ -79,6 +79,7 @@ class MainWindow(QtGui.QWidget):
         # napis
         self.min_temp_value = QtGui.QLabel(str(0), self)
         self.max_temp_value = QtGui.QLabel(str(float('inf')), self)
+        self.avr_temp_value = QtGui.QLabel(str('n/a'), self)
 
 
         #ustawienia
@@ -118,12 +119,18 @@ class MainWindow(QtGui.QWidget):
         ]
 
         max_temp_l = [
-            ('widget', QtGui.QLabel('temp max:', self)),
+            ('widget', QtGui.QLabel('temp maks:', self)),
             ('widget', self.max_temp_value),
+        ]
+
+        avr_temp_l = [
+            ('widget', QtGui.QLabel('temp śr.:', self)),
+            ('widget', self.avr_temp_value),
         ]
 
         self.min_temp_box = self.box('horizontal', min_temp_l)
         self.max_temp_box = self.box('horizontal', max_temp_l)
+        self.avr_temp_box = self.box('horizontal', avr_temp_l)
 
 
 
@@ -156,6 +163,7 @@ class MainWindow(QtGui.QWidget):
             ('widget', self.time),
             ('layout', self.min_temp_box),
             ('layout', self.max_temp_box),
+            ('layout', self.avr_temp_box),
             ('widget', self.button["generate"]),
             ('widget', self.button["kill"]),
             ('stretch',),
@@ -323,7 +331,6 @@ class MainWindow(QtGui.QWidget):
             self.wywolanie.calls_parameters['fun_wymiana_ciepla'] = 1
         else:
             self.wywolanie.calls_parameters['fun_wymiana_ciepla'] = 0
-
 
         self.wywolanie.run()
 
