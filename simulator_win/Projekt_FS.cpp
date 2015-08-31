@@ -1,6 +1,6 @@
 #include "Projekt_FS.h"
 
-
+ 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
 /*
 Spis tresci (kolejnosc definicji deklaracji klas/funkcji/stalych globalnych w kodzie:
@@ -21,13 +21,13 @@ klasy:
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 
-Czas::Czas():dni_w_roku(365.25),godzina(0),doba(24),kat_odchylenia(23/180*pi){}
+Czas::Czas():dni_w_roku(365.25),godzina(0),doba(24.),kat_odchylenia(23./180.*pi){}
 
 double Czas::kat_dobowy() {return (2*pi*godzina/doba);}
 
-double Czas::kat_roczny() {return (kat_odchylenia*sin(2*pi*godzina/(doba*dni_w_roku)));}
+double Czas::kat_roczny() {return (kat_odchylenia*sin(2*pi*(godzina+100.*doba)/(doba*dni_w_roku)));}
 
-void Czas::zwieksz_godzine() {++godzina;}
+void Czas::zwieksz_godzine() {godzina+=49;}
 void Czas::zwieksz_minute() {godzina += (1./60.);}
 
 string Czas::rok_dzien_godzina_minuta()
@@ -36,12 +36,12 @@ string Czas::rok_dzien_godzina_minuta()
 	stringstream xxx;
 	double rok,dz,godz,min;
 	rok=int(godzina/dni_w_roku/doba);
-	dz=int((godzina-rok*dni_w_roku)/doba);
-	godz=int(godzina-rok*dni_w_roku*doba-dz*doba)-12;
+	dz=int((godzina-rok*dni_w_roku*doba)/doba);
+	godz=int(godzina-rok*dni_w_roku*doba-doba*dz)+12;
 	min=int(60*(godzina-int(godzina)));
 
 
-	xxx<<" rok: "<<rok<<" dzien roku: "<<dz<<" godzina: "<<godz<<":"<<min<<endl;
+	xxx<< "rok: "<<"<year>"<<rok<<"</year>"<<" dzien roku: "<<"<day>"<<dz<<"</day>"<<" godzina: "<<"<time>"<<godz<<":"<<min<<"</time>"<< endl;
 	for(int i=0;i<7;++i){xxx>>tmp;zwrot+=tmp;zwrot+=" ";}
 	zwrot+='\n';
 
@@ -49,11 +49,61 @@ string Czas::rok_dzien_godzina_minuta()
 
 }
 
+double Czas::rok_dzien_godzina_minuta(int co_wybrac)
+{
+	double rok,dz,godz,min;
+	rok=int(godzina/dni_w_roku/doba);
+	dz=int((godzina-rok*dni_w_roku*doba)/doba);
+	godz=int(godzina-rok*dni_w_roku*doba-doba*dz)+12;
+	min=int(60*(godzina-int(godzina)));
+
+	switch (co_wybrac)
+	{	
+		case 0: return rok;
+		case 1: return dz;
+		case 2: return godz;
+		case 3: return min;
+		default: return dz;
+	}
+}
+
 double& Czas::ref_dni_w_roku(){ return dni_w_roku;}
 double& Czas::ref_godzina(){ return godzina;}
 double& Czas::ref_doba(){ return doba;}
 double& Czas::ref_kat_odchylenia(){ return kat_odchylenia;}
 
+
+
+void Czas::zapisz_czas(string naz_pli)
+{
+	ofstream plik;
+	plik.open(naz_pli.c_str());
+	if( !plik.good())
+	{
+		cout<<endl<<"blad otwarcia pliku"<<endl;
+	}
+	else
+	{
+		plik<<godzina;
+	}
+	plik.close();
+}
+void Czas::czytaj_czas(string naz_pli)
+{
+	ifstream plik;
+	plik.open(naz_pli.c_str());
+	if( !plik.good())
+	{
+		cout<<endl<<"blad otwarcia pliku"<<endl;
+	}
+	else
+	{
+		plik>>godzina;
+	}
+	plik.close();
+
+
+}
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 
@@ -68,7 +118,6 @@ cieplo_wlasciwe(cieplo_wlasciwe),
 wspulczynnik_dyfuzji(wspulczynnik_dyfuzji),
 energia_wew(energia_wew),
 rodz_powierzchni(rodz_powierzchni)
-
 {
 	
 	dlugosc_poludnikowa=abs(((pi-szerokosc_kontowa_biegunow_przez_2*2)*promien_ziemi)/ilosc_poludnikow);
@@ -119,7 +168,96 @@ double Pole::temperatura()
 
 }
 
+double Pole::albedo_od_T()
+{
+	switch(albedo_rodzaj)
+	{
+	case 0:
+			if(rodz_powierzchni==0)
+				return albedo_parametr_morze;
+			else 
+				return albedo_parametr_lad;
+	case 1:
+	{
+		if(rodz_powierzchni==0)
+		{
+			if(temperatura()<(268))	return 0.6*albedo_parametr_morze*2;
+			else if(temperatura()<278) return (0.6-(temperatura()-268)*0.04)*albedo_parametr_morze*2;
+			else if(temperatura()<303) return (0.2+(temperatura()-278)*0.008)*albedo_parametr_morze*2;
+			else return 0.4*albedo_parametr_morze*2;
+		}
+		else
+		{
+			if(temperatura()<(268))	return 0.6*albedo_parametr_lad*2;
+			else if(temperatura()<278) return (0.6-(temperatura()-268)*0.04)*albedo_parametr_lad*2;
+			else if(temperatura()<303) return (0.2+(temperatura()-278)*0.008)*albedo_parametr_lad*2;
+			else return 0.4*albedo_parametr_lad*2;
+		}
+	}
 
+	case 2:
+	{
+		if(rodz_powierzchni==0)
+		{
+			if(temperatura()<(268))	return 0.4*albedo_parametr_morze*2;
+			else if(temperatura()<278) return (0.4-(temperatura()-268)*0.02)*albedo_parametr_morze*2;
+			else if(temperatura()<303) return (0.2+(temperatura()-278)*0.004)*albedo_parametr_morze*2;
+			else return 0.3*albedo_parametr_morze*2;
+		}
+		else
+		{
+			if(temperatura()<(268))	return 0.4*albedo_parametr_lad*2;
+			else if(temperatura()<278) return (0.4-(temperatura()-268)*0.02)*albedo_parametr_lad*2;
+			else if(temperatura()<303) return (0.2+(temperatura()-278)*0.004)*albedo_parametr_lad*2;
+			else return 0.3*albedo_parametr_lad*2;
+		}
+
+	}
+	case 3:
+	{
+		if(rodz_powierzchni==0)
+		{
+			if(temperatura()<(268))	return 0.6*albedo_parametr_morze*2;
+			else if(temperatura()<278) return (0.6-(temperatura()-268)*0.02)*albedo_parametr_morze*2;
+			else return 0.4;
+		}
+		else
+		{
+			if(temperatura()<(268))	return 0.6*albedo_parametr_lad*2;
+			else if(temperatura()<278) return (0.6-(temperatura()-268)*0.02)*albedo_parametr_lad*2;
+			else return 0.4*albedo_parametr_lad*2;
+		}
+
+	}
+	case 4:
+	{
+		if(rodz_powierzchni==0)
+		{
+			if(temperatura()<(268))	return 0.4*albedo_parametr_morze*2;
+			else if(temperatura()<278) return (0.4-(temperatura()-268)*0.02)*albedo_parametr_morze*2;
+			else return 0.2;
+		}
+		else
+		{
+			if(temperatura()<(268))	return 0.4*albedo_parametr_lad*2;
+			else if(temperatura()<278) return (0.4-(temperatura()-268)*0.02)*albedo_parametr_lad*2;
+			else return 0.2*albedo_parametr_lad*2;
+		}
+
+	}
+	
+	default: return albedo_parametr_lad;	
+	} 
+	
+}
+
+double Pole::C_wlasciwe()
+{
+	if(rodz_powierzchni==0)
+		return cieplo_wlasciwe_morze;
+	else
+		return cieplo_wlasciwe_lad;
+}
 
 
 //unikanie  :public    ---funkcje z referencjami
@@ -144,8 +282,8 @@ Tablica_Pol::Tablica_Pol()
 		tab_pol_row[i]=vector<Pole>(ilosc_rownoleznikow);
 		for(int j=0;j<ilosc_rownoleznikow;++j)
 		{
-			Pole p(i,j,0.31,cieplo_wlasciwe_lad,wsp_dyf,300,0);
-			p.zmien(i,j,0.31,cieplo_wlasciwe_lad,wsp_dyf,300*p.ref_cieplo_wlasciwe()*p.ref_pole_powiezchni(),0);
+			Pole p(i,j,0.31,cieplo_wlasciwe_morze,wsp_dyf,300,0);
+			p.zmien(i,j,0.31,cieplo_wlasciwe_morze,wsp_dyf,300*p.ref_cieplo_wlasciwe()*p.ref_pole_powiezchni(),0);
 			tab_pol_row[i][j]=p;
 
 		}
@@ -153,52 +291,50 @@ Tablica_Pol::Tablica_Pol()
 	}
 
 }
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-double Pole::albedo_od_T()
+
+double Tablica_Pol::srednia_temperatura()
 {
-	switch(albedo_rodzaj)
-	{
-	case 1:
-	{
-		if(rodz_powierzchni==0)
-		{
-			if(temperatura()<(268))	return 0.85;
-			else if(temperatura()<278) return ((temperatura()-268)*0.07+0.85);
-			else return 0.15;
-		}
-		else
-		{
-			if(temperatura()<(268))	return 0.85;
-			else if(temperatura()<278) return ((temperatura()-268)*0.055+0.85);
-			else return 0.4;
-		}
-	}
-	case 0:
-			if(rodz_powierzchni==0)
-				return albedo_parametr_morze;
-			else 
-				return albedo_parametr_lad;
-		
-	default: return albedo_parametr_lad;	
-	} 
-	
+	double suma_temp_razy_pole=0,suma_pole;
+	for(int i=0;i<ilosc_poludnikow;++i)	
+		for(int j=0;j<ilosc_rownoleznikow;++j)
+			{
+				suma_temp_razy_pole+=tab_pol_row[i][j].temperatura()*tab_pol_row[i][j].ref_pole_powiezchni();
+				suma_pole+=tab_pol_row[i][j].ref_pole_powiezchni();
+			}
+	return suma_temp_razy_pole/suma_pole-273.15;
 }
 
-double Pole::C_wlasciwe()
+double Tablica_Pol::srednie_albedo()
 {
-	if(rodz_powierzchni==0)
-		return cieplo_wlasciwe_morze;
-	else
-		return cieplo_wlasciwe_lad;
+	double suma_albe_razy_pole=0,suma_pole;
+	for(int i=0;i<ilosc_poludnikow;++i)	
+		for(int j=0;j<ilosc_rownoleznikow;++j)
+			{
+				suma_albe_razy_pole+=tab_pol_row[i][j].albedo_od_T()*tab_pol_row[i][j].ref_pole_powiezchni();
+				suma_pole+=tab_pol_row[i][j].ref_pole_powiezchni();
+			}
+	return suma_albe_razy_pole/suma_pole;
+
+
 }
+
+pair<double,double> Tablica_Pol::temperatura_min_max()
+{
+	double min=pow(10,10),max=0;
+	for(int i=0;i<ilosc_poludnikow;++i)	
+		for(int j=0;j<ilosc_rownoleznikow;++j)
+			{
+				if(min>tab_pol_row[i][j].temperatura())
+					min=tab_pol_row[i][j].temperatura();
+				if(max<tab_pol_row[i][j].temperatura())
+					max=tab_pol_row[i][j].temperatura();
+			}
+	return make_pair(min-273.15,max-273.15);
+}
+
 
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-
-
-
-
 
 
 
@@ -241,8 +377,14 @@ void slonce_w_godz(Tablica_Pol& tab,Pole& b_polnocny,Pole& b_poludniowy, Czas& c
 	{
 		for(int i=0;i<ilosc_poludnikow;++i)
 		{
-				wektor n(-sin(tab.tab_pol_row[i][j].rownoleznik())*cos(tab.tab_pol_row[i][j].poludnik()),-sin(tab.tab_pol_row[i][j].rownoleznik())*sin(tab.tab_pol_row[i][j].poludnik()),-cos(tab.tab_pol_row[i][j].rownoleznik())),
-				s(cos(czas.kat_roczny())*cos(czas.kat_dobowy()),cos(czas.kat_roczny())*sin(czas.kat_dobowy()),sin(czas.kat_roczny()));
+				wektor n(
+				-sin(tab.tab_pol_row[i][j].rownoleznik())*cos(tab.tab_pol_row[i][j].poludnik()),
+				-sin(tab.tab_pol_row[i][j].rownoleznik())*sin(tab.tab_pol_row[i][j].poludnik()),
+				-cos(tab.tab_pol_row[i][j].rownoleznik())),
+				s(
+				cos(czas.kat_roczny())*cos(czas.kat_dobowy()),
+				cos(czas.kat_roczny())*sin(czas.kat_dobowy()),
+				sin(czas.kat_roczny()));
 				il_skal= n*s;
 				
 				if(il_skal>0)
@@ -278,7 +420,11 @@ void emisja_w_min(Tablica_Pol& tab,Pole& b_polnocny,Pole& b_poludniowy)
 
  			if(pole_test.ref_energia_wew()-dE>0)	
 				dE*=-1;
-			else cout<<endl<<"uwaga ujemna temperatura BLAD!!!"<<endl;
+			else 
+				{
+					cout<<endl<<"uwaga ujemna temperatura BLAD!!!"<<endl;
+					pole_test.ref_energia_wew()=0;
+				}
 
 
 			tab.tab_pol_row[i][j].ref_energia_wew()+=dE;
@@ -303,7 +449,11 @@ void emisja_w_godz(Tablica_Pol& tab,Pole& b_polnocny,Pole& b_poludniowy)
 
  			if(pole_test.ref_energia_wew()-dE>0)	
 				dE*=-1;
-			else cout<<endl<<"uwaga ujemna temperatura BLAD!!!"<<endl;
+			else
+			{
+				cout<<endl<<"uwaga ujemna temperatura BLAD!!!"<<endl;
+				pole_test.ref_energia_wew()=0;
+			}
 
 
 			tab.tab_pol_row[i][j].ref_energia_wew()+=dE;
@@ -316,35 +466,69 @@ void emisja_w_godz(Tablica_Pol& tab,Pole& b_polnocny,Pole& b_poludniowy)
 }
 
 
+int index_pol(int nr){return nr%ilosc_poludnikow;}
+int index_row(int nr)
+{
+	if(nr!=ilosc_rownoleznikow)
+		return nr%ilosc_rownoleznikow;
+	else 
+		return ilosc_rownoleznikow-1;
+}
+
+void wymiana_ciepla_w_min(Tablica_Pol& tab,Pole& b_polnocny,Pole& b_poludniowy)
+{
+	double wspulczynnik_dyfuzji=wsp_dyf;
+	Tablica_Pol tmp;
+	double dE,dl_pol,dl_row;
+	for(int i=0;i<ilosc_poludnikow;++i)
+	for(int j=0;j<ilosc_rownoleznikow;++j)
+		{tmp.tab_pol_row[i][j]=tab.tab_pol_row[i][j];}
+
+	//Pole tmp_b_polnocny(b_polnocny),tmp_b_poludniowy(b_poludniowy);
+	for(int i=0;i<ilosc_poludnikow;++i)
+		for(int j=0;j<ilosc_rownoleznikow;++j)
+			{
+				dl_pol=	tmp.tab_pol_row[i][j].ref_dlugosc_poludnikowa();
+				dl_row= tmp.tab_pol_row[i][j].ref_dlugosc_rownoleznikowa();
+				dE=(tmp.tab_pol_row[i][index_row(j+1)].temperatura()-tmp.tab_pol_row[i][j].temperatura())*dl_pol*wspulczynnik_dyfuzji*60;
+					tab.tab_pol_row[i][j].ref_energia_wew()+=dE;tab.tab_pol_row[i][index_row(j+1)].ref_energia_wew()-=dE;
+				dE=(tmp.tab_pol_row[index_pol(i+1)][j].temperatura()-tmp.tab_pol_row[i][j].temperatura())*dl_row*wspulczynnik_dyfuzji*60;
+					tab.tab_pol_row[i][j].ref_energia_wew()+=dE;tab.tab_pol_row[index_pol(i+1)][j].ref_energia_wew()-=dE;
+				
+			}
+
+			
 
 
+}
 
 
+void wymiana_ciepla_w_godz(Tablica_Pol& tab,Pole& b_polnocny,Pole& b_poludniowy)
+{
+	double wspulczynnik_dyfuzji=wsp_dyf;
+	Tablica_Pol tmp;
+	double dE,dl_pol,dl_row;
+	for(int i=0;i<ilosc_poludnikow;++i)
+	for(int j=0;j<ilosc_rownoleznikow;++j)
+		{tmp.tab_pol_row[i][j]=tab.tab_pol_row[i][j];}
+
+	//Pole tmp_b_polnocny(b_polnocny),tmp_b_poludniowy(b_poludniowy);
+	for(int i=0;i<ilosc_poludnikow;++i)
+		for(int j=0;j<ilosc_rownoleznikow;++j)
+			{
+				dl_pol=	tmp.tab_pol_row[i][j].ref_dlugosc_poludnikowa();
+				dl_row= tmp.tab_pol_row[i][j].ref_dlugosc_rownoleznikowa();
+				dE=(tmp.tab_pol_row[i][index_row(j+1)].temperatura()-tmp.tab_pol_row[i][j].temperatura())*dl_pol*wspulczynnik_dyfuzji*3600;
+					tab.tab_pol_row[i][j].ref_energia_wew()+=dE;tab.tab_pol_row[i][index_row(j+1)].ref_energia_wew()-=dE;
+				dE=(tmp.tab_pol_row[index_pol(i+1)][j].temperatura()-tmp.tab_pol_row[i][j].temperatura())*dl_row*wspulczynnik_dyfuzji*3600;
+					tab.tab_pol_row[i][j].ref_energia_wew()+=dE;tab.tab_pol_row[index_pol(i+1)][j].ref_energia_wew()-=dE;
+				
+			}
+
+			
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+}
 
 
 
@@ -355,7 +539,7 @@ void akcja_w_min(Tablica_Pol& tab,Pole& b_polnocny,Pole& b_poludniowy, Czas& cza
 	{
 		if(fun_slonce)slonce_w_min(tab,b_polnocny,b_poludniowy,czas);
 		if(fun_emisja)emisja_w_min(tab,b_polnocny,b_poludniowy);
-		if(fun_wymiana_ciepla)//wymiana_ciepla_w_min(tab,b_polnocny,b_poludniowy);
+		if(fun_wymiana_ciepla)wymiana_ciepla_w_min(tab,b_polnocny,b_poludniowy);
 		czas.zwieksz_minute();
 
 
@@ -367,8 +551,8 @@ void akcja_w_godz(Tablica_Pol& tab,Pole& b_polnocny,Pole& b_poludniowy, Czas& cz
 {
 	for(int i=0;i<ilosc_wywolan;++i)
 	{
-		if(fun_slonce)slonce_w_min(tab,b_polnocny,b_poludniowy,czas);
-		if(fun_emisja)emisja_w_min(tab,b_polnocny,b_poludniowy);
+		if(fun_slonce)slonce_w_godz(tab,b_polnocny,b_poludniowy,czas);
+		if(fun_emisja)emisja_w_godz(tab,b_polnocny,b_poludniowy);
 		if(fun_wymiana_ciepla)wymiana_ciepla_w_godz(tab,b_polnocny,b_poludniowy);
 		czas.zwieksz_godzine();
 
@@ -381,7 +565,7 @@ void akcja_w_godz(Tablica_Pol& tab,Pole& b_polnocny,Pole& b_poludniowy, Czas& cz
 
 // funkcje zapisz i czytaj
 
-bool zapisz(const string nazwa_pliku,Tablica_Pol& tab,const Pole& bieg_polu,const Pole& bieg_poln)
+bool zapisz(const string nazwa_pliku,Tablica_Pol& tab,const Pole& bieg_polu,const Pole& bieg_poln,Czas& czas)
 {
 	ofstream plik;
 	plik.open(nazwa_pliku.c_str());
@@ -392,40 +576,14 @@ bool zapisz(const string nazwa_pliku,Tablica_Pol& tab,const Pole& bieg_polu,cons
 	{
 		for(int j=0;j<ilosc_rownoleznikow;++j)
 		{
-			plik<<"x"<<" "<<         ////////'x'-ozancza rozpoczecie zapisu nastepnego pola
-			tab.tab_pol_row[i][j].poludnik()<<" "<<
-			tab.tab_pol_row[i][j].rownoleznik()<<" "<<
-			tab.tab_pol_row[i][j].temperatura()<<" "<<
-			tab.tab_pol_row[i][j].ref_nr_poludnik()<<" "<<
-			tab.tab_pol_row[i][j].ref_nr_rownoleznik()<<" "<<
-			tab.tab_pol_row[i][j].ref_dlugosc_poludnikowa()<<" "<<
-			tab.tab_pol_row[i][j].ref_dlugosc_rownoleznikowa()<<" "<<
-			tab.tab_pol_row[i][j].ref_pole_powiezchni()<<" "<<
-			tab.tab_pol_row[i][j].albedo_od_T()<<" "<<
-			tab.tab_pol_row[i][j].ref_cieplo_wlasciwe()<<" "<<
-			tab.tab_pol_row[i][j].ref_wspulczynnik_dyfuzji()<<" "<<
-			tab.tab_pol_row[i][j].ref_energia_wew()<<" ";
+			plik<<" x "<<tab.tab_pol_row[i][j].ref_energia_wew();
 		}
-		plik<<endl;
+		//plik<<endl;
 	}
+	czas.zapisz_czas("PLIKI_TXT\\zapis_czasu.txt");
 	plik.close();
 	return true;
 
-
-/*   Kolejnoœæ zapisu danych do pliku jak ponizej
-double poludnik();
-double rownoleznik();
-double temperatura();
-int& ref_nr_poludnik();
-int& ref_nr_rownoleznik();
-double& ref_dlugosc_poludnikowa();
-double& ref_dlugosc_rownoleznikowa();
-double& ref_pole_powiezchni();
-double albedo_od_T();
-double& ref_cieplo_wlasciwe();
-double& ref_wspulczynnik_dyfuzji();
-double& ref_energia_wew();
-*/
 }
 
 
@@ -433,7 +591,7 @@ double& ref_energia_wew();
 
 
 
-bool czytaj(const string nazwa_pliku,Tablica_Pol& tab,const Pole& bieg_polu,const Pole& bieg_poln)
+bool czytaj(const string nazwa_pliku,Tablica_Pol& tab,const Pole& bieg_polu,const Pole& bieg_poln,Czas& czas)
 {
 	ifstream plik;
 	plik.open(nazwa_pliku.c_str());
@@ -444,43 +602,21 @@ bool czytaj(const string nazwa_pliku,Tablica_Pol& tab,const Pole& bieg_polu,cons
 	{
 		for(int j=0;j<ilosc_rownoleznikow;++j)
 		{
-			if(plik.good()){
-			char c,smiec;
-			plik>>c;
-			while(c=='x')
+			if(plik.good())
 			{
+				char c,smiec;
+				
 				plik>>smiec;
-				plik>>smiec;
-				plik>>smiec;
-				plik>>smiec;
-				plik>>tab.tab_pol_row[i][j].ref_nr_poludnik();
-				plik>>tab.tab_pol_row[i][j].ref_nr_rownoleznik();
-				plik>>tab.tab_pol_row[i][j].ref_dlugosc_poludnikowa();
-				plik>>tab.tab_pol_row[i][j].ref_dlugosc_rownoleznikowa();
-				plik>>tab.tab_pol_row[i][j].ref_pole_powiezchni();
-				plik>>tab.tab_pol_row[i][j].ref_cieplo_wlasciwe();
-				plik>>tab.tab_pol_row[i][j].ref_wspulczynnik_dyfuzji();
 				plik>>tab.tab_pol_row[i][j].ref_energia_wew();
-				plik>>c;
-			}}else cout<<endl<<"cos zlego stalo sie z plikiem przy czytania"<<endl;		
+			
+			}
+			else 
+				cout<<endl<<"cos zlego stalo sie z plikiem przy czytania"<<endl;		
 		}
 	}
+	czas.czytaj_czas("PLIKI_TXT\\zapis_czasu.txt");
 	plik.close();
 	return true;
-
-/*   Kolejnoœæ czytania danych do pliku jak ponizej
-double poludnik();
-double rownoleznik();
-double temperatura();
-int& ref_nr_poludnik();
-int& ref_nr_rownoleznik();
-double& ref_dlugosc_poludnikowa();
-double& ref_dlugosc_rownoleznikowa();
-double& ref_pole_powiezchni();
-double& ref_cieplo_wlasciwe();
-double& ref_wspulczynnik_dyfuzji();
-double& ref_energia_wew();
-*/
 }
 
 
@@ -488,34 +624,41 @@ bool czytaj_mape_swiata(const string nazwa_pliku,Tablica_Pol& tab)
 {
 	ifstream plik;
 	plik.open(nazwa_pliku.c_str());
-	if( !plik.good() ){cout<<endl<<"blad otwarcia pliku w funkcji czytaj"<<endl;return false;}
+	if( !plik.good() ){cout<<endl<<"blad otwarcia pliku w funkcji czytaj_mape_swiata"<<endl;return false;}
 	
-	int j=0;
-	char c;
-	for(int i=0;i<ilosc_poludnikow;++i)
+	ofstream swiat;
+	swiat.open("PLIKI_TXT\\test.czytania_swiata.txt");
+	if( !swiat.good() ){cout<<endl<<"blad otwarcia pliku "<<endl;return false;}
+
+
+	char c;string linia;
+	for(int j=0;j<ilosc_rownoleznikow;++j)
 	{
-		plik>>c;
-		while(j<ilosc_rownoleznikow&&c!='\n')
+		getline(plik,linia);
+		for(int l=0,i=0;l<linia.size()&&i<ilosc_poludnikow-1;++l)
 		{
-			plik>>c;
-			if(c!='\n')tab.tab_pol_row[i][j].ref_rodz_powierzchni()=atoi(&c);
-			++j;
-		}
-		j=0;
-	/*for(int j=0;j<ilosc_rownoleznikow;++j)
-		{
-			if(plik.good())
 			{
-				char c;
-				plik>>c;
-				if(c!='\n')tab.tab_pol_row[i][j].ref_rodz_powierzchni()=atoi(c);
+				c=linia[l];
+				if(c=='0'||c=='1')++i;else continue;
+				if(atoi(&c)==1||atoi(&c)==0)tab.tab_pol_row[i][j].ref_rodz_powierzchni()=atoi(&c);
+			}
+
+		}
+	}
+	for(int i=0;i<ilosc_rownoleznikow;++i)
+	{
+		for(int j=0;j<ilosc_poludnikow;++j)
+		{
 			
-			}}else cout<<endl<<"cos zlego stalo sie z plikiem przy czytania"<<endl;		
-		}*/
+			swiat<<tab.tab_pol_row[i][j].ref_rodz_powierzchni()<<" ";
+			//cout<<tab.tab_pol_row[i][j].ref_rodz_powierzchni()<<" ";
+		}
+		swiat<<endl;
+		//cout<<endl;
 	}
 	plik.close();
-	return true;	
-
+	swiat.close();
+	return true;
 
 
 }
@@ -524,7 +667,7 @@ bool czytaj_mape_swiata(const string nazwa_pliku,Tablica_Pol& tab)
 
 bool rysuj_ziemie_jako_jajko(const string nazwa_pliku,Tablica_Pol& tab)
 {
-	ofstream plik;
+	ofstream plik;double szerokosc_legendy=0.3;
 	plik.open(nazwa_pliku.c_str());
 	if( !plik.good() ){cout<<endl<<"blad otwarcia pliku w funkcji zapis"<<endl;return false;}
 	
@@ -534,13 +677,14 @@ bool rysuj_ziemie_jako_jajko(const string nazwa_pliku,Tablica_Pol& tab)
 		for(int i=0;i<A;++i)
 		{
 			
-			if(i>=(A/2*(1-sin(tab.tab_pol_row[int(i/5.)][j].rownoleznik())))&&i<(A/2*(1+sin(tab.tab_pol_row[int(i/5.)][j].rownoleznik()))))
+			if(i>=(A/2*(1-sin(tab.tab_pol_row[int((i)/5.)][j].rownoleznik())))&&i<(A/2*(1+sin(tab.tab_pol_row[int(i/5.)][j].rownoleznik()))))
 			{	
 				int index=(i-A/2*(1-sin(tab.tab_pol_row[int(i/5.)][j].rownoleznik())))/5/sin(tab.tab_pol_row[int(i/5.)][j].rownoleznik());
 
-				plik<<tab.tab_pol_row[index][j].temperatura()<<" ";
+				plik<<10*int(tab.tab_pol_row[index][j].temperatura()/10)<<" ";
 			}
-			else if (i>A*7/10&&(j>ilosc_rownoleznikow*9./10.))plik<<(i-A*7/10+1)*500./A/3.*10.<<" ";
+			//else if (i>A*(1-szerokosc_legendy)&&(j>ilosc_rownoleznikow*0.9&&j<ilosc_rownoleznikow*0.98))plik<<(i-A*(1-szerokosc_legendy)+1)*500./A/szerokosc_legendy<<" ";
+			//else if (i>A*(1-szerokosc_legendy)&&(j>ilosc_rownoleznikow*0.98))plik<<300<<" ";
 			else {plik<<0<<" ";}
 
 		}
@@ -553,6 +697,50 @@ bool rysuj_ziemie_jako_jajko(const string nazwa_pliku,Tablica_Pol& tab)
 
 
 }
+
+bool zapisuj_temperature_srednio_i_arg_wywolania(const string nazwa_pliku,Tablica_Pol& tab,Czas& czas,int ilosc_wywolan)
+{
+	ofstream plik;stringstream tmp;string tmp2;
+	plik.open(nazwa_pliku.c_str(),ios::app);
+	if( !plik.good() ){cout<<endl<<"blad otwarcia pliku"<<endl;return false;}
+	else{ 
+	
+
+			/*plik<<tab.srednia_temperatura()<<" "<<stala_sloneczna<<" "<<wspulczynnik_reemisji<<" "<<stala_sloneczna<<" "<<wsp_dyf<<
+			" "<<albedo_parametr_lad<<" "<<albedo_parametr_morze<<" "<<albedo_rodzaj<<" "<<ilosc_wywolan<<" "<<cieplo_wlasciwe_lad<<
+			" "<<cieplo_wlasciwe_morze<<" "<<czyt_mape_swiata<<endl;  */  
+			
+			for(int i=1;i<aargc;++i)
+			{
+				//plik<<atof(aargv[i])<<" ";
+				//cout<<"atof(aargv[i]): " <<atof(aargv[i])<<" ";										
+			}
+			//plik<<tab.temperatura_min_max().first<<" ";
+			//plik<<tab.temperatura_min_max().second<<" ";
+			//plik<<ilosc_wywolan<<" ";
+			//plik<<tab.srednie_albedo()<<" ";
+			plik<<wspulczynnik_reemisji<<" ";
+			plik<<tab.srednia_temperatura()<<" "; 
+			plik<<endl;
+		}
+	plik.close();
+	return true;
+}
+/*if(argc>1)ilosc_poludnikow=atof(argv[1]);
+if(argc>2)ilosc_rownoleznikow=atof(argv[2]);
+if(argc>3)stala_sloneczna=atof(argv[3]);
+if(argc>4)wspulczynnik_reemisji=atof(argv[4]);
+if(argc>5)wsp_dyf=atof(argv[5]);
+if(argc>6)fun_slonce=atof(argv[6]);
+if(argc>7)fun_emisja=atof(argv[7]);
+if(argc>8)fun_wymiana_ciepla=atof(argv[8]);
+if(argc>9)albedo_parametr_lad=atof(argv[9]);
+if(argc>10)albedo_parametr_morze=atof(argv[10]);
+if(argc>11)albedo_rodzaj=atof(argv[11]);
+if(argc>12)ilosc_wywolan=atof(argv[12]);
+if(argc>13)cieplo_wlasciwe_lad=atof(argv[13]);
+if(argc>14)cieplo_wlasciwe_morze=atof(argv[14]);
+if(argc>15)czyt_mape_swiata=atof(argv[15]);*/
 
 
 
@@ -574,413 +762,6 @@ double wektor::operator* (wektor b)
     wektor a=*this;
      return (a.x*b.x+a.y*b.y+a.z*b.z);
 }
-
-
-
-
-
-
-void wymiana_ciepla_w_min(Tablica_Pol& tab,Pole& b_polnocny,Pole& b_poludniowy)
-{
-	double wspulczynnik_dyfuzji=wsp_dyf;
-	Tablica_Pol tmp;
-	double dE,przekotna,dl_pol,dl_row;
-	for(int i=0;i<ilosc_poludnikow;++i)
-	for(int j=0;j<ilosc_rownoleznikow;++j)
-		tmp.tab_pol_row[i][j]=tab.tab_pol_row[i][j];
-
-	Pole tmp_b_polnocny(b_polnocny),tmp_b_poludniowy(b_poludniowy);
-	for(int i=1;i<ilosc_poludnikow-1;++i)
-		for(int j=1;j<ilosc_rownoleznikow-1;++j)
-			{
-				dl_pol=	tmp.tab_pol_row[i][j].ref_dlugosc_poludnikowa();
-				dl_row= tmp.tab_pol_row[i][j].ref_dlugosc_rownoleznikowa();
-				przekotna=sqrt(pow(dl_pol,2)+pow(dl_row,2));
-				dE=(tmp.tab_pol_row[i-1][j+1].temperatura()-tmp.tab_pol_row[i][j].temperatura())/przekotna*wspulczynnik_dyfuzji*60;
-					tab.tab_pol_row[i][j].ref_energia_wew()+=dE;tab.tab_pol_row[i-1][j+1].ref_energia_wew()-=dE;
-				dE=(tmp.tab_pol_row[i][j+1].temperatura()-tmp.tab_pol_row[i][j].temperatura())/dl_row*wspulczynnik_dyfuzji*60;
-					tab.tab_pol_row[i][j].ref_energia_wew()+=dE;tab.tab_pol_row[i][j+1].ref_energia_wew()-=dE;
-				dE=(tmp.tab_pol_row[i+1][j+1].temperatura()-tmp.tab_pol_row[i][j].temperatura())/przekotna*wspulczynnik_dyfuzji*60;
-					tab.tab_pol_row[i][j].ref_energia_wew()+=dE;tab.tab_pol_row[i+1][j+1].ref_energia_wew()-=dE;
-				dE=(tmp.tab_pol_row[i-1][j].temperatura()-tmp.tab_pol_row[i][j].temperatura())/dl_row*wspulczynnik_dyfuzji*60;
-					tab.tab_pol_row[i][j].ref_energia_wew()+=dE;tab.tab_pol_row[i-1][j].ref_energia_wew()-=dE;
-				dE=(tmp.tab_pol_row[i+1][j].temperatura()-tmp.tab_pol_row[i][j].temperatura())/dl_row*wspulczynnik_dyfuzji*60;
-					tab.tab_pol_row[i][j].ref_energia_wew()+=dE;tab.tab_pol_row[i+1][j].ref_energia_wew()-=dE;
-				dE=(tmp.tab_pol_row[i-1][j-1].temperatura()-tmp.tab_pol_row[i][j].temperatura())/przekotna*wspulczynnik_dyfuzji*60;
-					tab.tab_pol_row[i][j].ref_energia_wew()+=dE;tab.tab_pol_row[i-1][j-1].ref_energia_wew()-=dE;
-				dE=(tmp.tab_pol_row[i][j-1].temperatura()-tmp.tab_pol_row[i][j].temperatura())/dl_row*wspulczynnik_dyfuzji*60;
-					tab.tab_pol_row[i][j].ref_energia_wew()+=dE;tab.tab_pol_row[i][j-1].ref_energia_wew()-=dE;
-				dE=(tmp.tab_pol_row[i+1][j-1].temperatura()-tmp.tab_pol_row[i][j].temperatura())/przekotna*wspulczynnik_dyfuzji*60;	
-					tab.tab_pol_row[i][j].ref_energia_wew()+=dE;tab.tab_pol_row[i+1][j-1].ref_energia_wew()-=dE;
-			}
-//brzegi bez tab_pol_row tabelki bez samych krancow krance na koncu
-	/*for(int i=1;i<ilosc_poludnikow-1;++i)
-		{
-			int j=0;
-			dl_pol=	tmp.tab_pol_row[i][j].ref_dlugosc_poludnikowa();
-			dl_row= tmp.tab_pol_row[i][j].ref_dlugosc_rownoleznikowa();
-			przekotna=sqrt(pow(dl_pol,2)+pow(dl_row,2));
-			dE=(tmp_b_polnocny.temperatura()-tmp.tab_pol_row[i][j].temperatura())/(2*przekotna+1)*wspulczynnik_dyfuzji*60;//(2*przekotna+1)---3 w jednym
-				tab.tab_pol_row[i][j].ref_energia_wew()+=dE;b_polnocny.ref_energia_wew()-=dE;
-			dE=(tmp.tab_pol_row[i-1][j].temperatura()-tmp.tab_pol_row[i][j].temperatura())/dl_row*wspulczynnik_dyfuzji*60;
-				tab.tab_pol_row[i][j].ref_energia_wew()+=dE;tab.tab_pol_row[i-1][j].ref_energia_wew()-=dE;
-			dE=(tmp.tab_pol_row[i+1][j].temperatura()-tmp.tab_pol_row[i][j].temperatura())/dl_row*wspulczynnik_dyfuzji*60;
-				tab.tab_pol_row[i][j].ref_energia_wew()+=dE;tab.tab_pol_row[i+1][j].ref_energia_wew()-=dE;
-			dE=(tmp.tab_pol_row[i-1][j+1].temperatura()-tmp.tab_pol_row[i][j].temperatura())/przekotna*wspulczynnik_dyfuzji*60;
-				tab.tab_pol_row[i][j].ref_energia_wew()+=dE;tab.tab_pol_row[i-1][j+1].ref_energia_wew()-=dE;
-			dE=(tmp.tab_pol_row[i][j+1].temperatura()-tmp.tab_pol_row[i][j].temperatura())/dl_row*wspulczynnik_dyfuzji*60;
-				tab.tab_pol_row[i][j].ref_energia_wew()+=dE;tab.tab_pol_row[i][j+1].ref_energia_wew()-=dE;
-			dE=(tmp.tab_pol_row[i+1][j+1].temperatura()-tmp.tab_pol_row[i][j].temperatura())/przekotna*wspulczynnik_dyfuzji*60;
-				tab.tab_pol_row[i][j].ref_energia_wew()+=dE;tab.tab_pol_row[i+1][j+1].ref_energia_wew()-=dE;
-				
-			j=ilosc_rownoleznikow-2;//j=ilosc_rownoleznikow-1;----------drugi biegun	
-			dE=(tmp_b_poludniowy.temperatura()-tmp.tab_pol_row[i][j].temperatura())/(2*przekotna+1)*wspulczynnik_dyfuzji*60;//(2*przekotna+1)---3 w jednym
-				tab.tab_pol_row[i][j].ref_energia_wew()+=dE;b_poludniowy.ref_energia_wew()-=dE;
-			dE=(tmp.tab_pol_row[i-1][j].temperatura()-tmp.tab_pol_row[i][j].temperatura())/dl_row*wspulczynnik_dyfuzji*60;
-				tab.tab_pol_row[i][j].ref_energia_wew()+=dE;tab.tab_pol_row[i-1][j].ref_energia_wew()-=dE;
-			dE=(tmp.tab_pol_row[i+1][j].temperatura()-tmp.tab_pol_row[i][j].temperatura())/dl_row*wspulczynnik_dyfuzji*60;
-				tab.tab_pol_row[i][j].ref_energia_wew()+=dE;tab.tab_pol_row[i+1][j].ref_energia_wew()-=dE;
-			dE=(tmp.tab_pol_row[i-1][j-1].temperatura()-tmp.tab_pol_row[i][j].temperatura())/przekotna*wspulczynnik_dyfuzji*60;
-				tab.tab_pol_row[i][j].ref_energia_wew()+=dE;tab.tab_pol_row[i-1][j-1].ref_energia_wew()-=dE;
-			dE=(tmp.tab_pol_row[i][j-1].temperatura()-tmp.tab_pol_row[i][j].temperatura())/dl_row*wspulczynnik_dyfuzji*60;
-				tab.tab_pol_row[i][j].ref_energia_wew()+=dE;tab.tab_pol_row[i][j-1].ref_energia_wew()-=dE;
-			dE=(tmp.tab_pol_row[i+1][j-1].temperatura()-tmp.tab_pol_row[i][j].temperatura())/przekotna*wspulczynnik_dyfuzji*60;	
-				tab.tab_pol_row[i][j].ref_energia_wew()+=dE;tab.tab_pol_row[i+1][j-1].ref_energia_wew()-=dE;
-		}
-
-		for(int j=1;j<ilosc_rownoleznikow-1;++j)
-			{
-				int i=0;
-				dl_pol=	tmp.tab_pol_row[i][j].ref_dlugosc_poludnikowa();
-				dl_row= tmp.tab_pol_row[i][j].ref_dlugosc_rownoleznikowa();
-				przekotna=sqrt(pow(dl_pol,2)+pow(dl_row,2));
-				dE=(tmp.tab_pol_row[i+ilosc_poludnikow-1][j+1].temperatura()-tmp.tab_pol_row[i][j].temperatura())/przekotna*wspulczynnik_dyfuzji*60;
-					tab.tab_pol_row[i][j].ref_energia_wew()+=dE;tab.tab_pol_row[i+ilosc_poludnikow-1][j+1].ref_energia_wew()-=dE;
-				dE=(tmp.tab_pol_row[i][j+1].temperatura()-tmp.tab_pol_row[i][j].temperatura())/dl_row*wspulczynnik_dyfuzji*60;
-					tab.tab_pol_row[i][j].ref_energia_wew()+=dE;tab.tab_pol_row[i][j+1].ref_energia_wew()-=dE;
-				dE=(tmp.tab_pol_row[i+1][j+1].temperatura()-tmp.tab_pol_row[i][j].temperatura())/przekotna*wspulczynnik_dyfuzji*60;
-					tab.tab_pol_row[i][j].ref_energia_wew()+=dE;tab.tab_pol_row[i+1][j+1].ref_energia_wew()-=dE;
-				dE=(tmp.tab_pol_row[i+ilosc_poludnikow-1][j].temperatura()-tmp.tab_pol_row[i][j].temperatura())/dl_row*wspulczynnik_dyfuzji*60;
-					tab.tab_pol_row[i][j].ref_energia_wew()+=dE;tab.tab_pol_row[i+ilosc_poludnikow-1][j].ref_energia_wew()-=dE;
-				dE=(tmp.tab_pol_row[i+1][j].temperatura()-tmp.tab_pol_row[i][j].temperatura())/dl_row*wspulczynnik_dyfuzji*60;
-					tab.tab_pol_row[i][j].ref_energia_wew()+=dE;tab.tab_pol_row[i+1][j].ref_energia_wew()-=dE;
-				dE=(tmp.tab_pol_row[i+ilosc_poludnikow-1][j-1].temperatura()-tmp.tab_pol_row[i][j].temperatura())/przekotna*wspulczynnik_dyfuzji*60;
-					tab.tab_pol_row[i][j].ref_energia_wew()+=dE;tab.tab_pol_row[i+ilosc_poludnikow-1][j-1].ref_energia_wew()-=dE;
-				dE=(tmp.tab_pol_row[i][j-1].temperatura()-tmp.tab_pol_row[i][j].temperatura())/dl_row*wspulczynnik_dyfuzji*60;
-					tab.tab_pol_row[i][j].ref_energia_wew()+=dE;tab.tab_pol_row[i][j-1].ref_energia_wew()-=dE;
-				dE=(tmp.tab_pol_row[i+1][j-1].temperatura()-tmp.tab_pol_row[i][j].temperatura())/przekotna*wspulczynnik_dyfuzji*60;	
-					tab.tab_pol_row[i][j].ref_energia_wew()+=dE;tab.tab_pol_row[i+1][j-1].ref_energia_wew()-=dE;
-				i=ilosc_poludnikow-1;//i=ilosc_rownoleznikow-1;-----druda strona poludnika 0
-				dE=(tmp.tab_pol_row[i-1][j+1].temperatura()-tmp.tab_pol_row[i][j].temperatura())/przekotna*wspulczynnik_dyfuzji*60;
-					tab.tab_pol_row[i][j].ref_energia_wew()+=dE;tab.tab_pol_row[i-1][j+1].ref_energia_wew()-=dE;
-				dE=(tmp.tab_pol_row[i][j+1].temperatura()-tmp.tab_pol_row[i][j].temperatura())/dl_row*wspulczynnik_dyfuzji*60;
-					tab.tab_pol_row[i][j].ref_energia_wew()+=dE;tab.tab_pol_row[i][j+1].ref_energia_wew()-=dE;
-				dE=(tmp.tab_pol_row[i-ilosc_poludnikow+1][j+1].temperatura()-tmp.tab_pol_row[i][j].temperatura())/przekotna*wspulczynnik_dyfuzji*60;
-					tab.tab_pol_row[i][j].ref_energia_wew()+=dE;tab.tab_pol_row[i-ilosc_poludnikow+1][j+1].ref_energia_wew()-=dE;
-				dE=(tmp.tab_pol_row[i-1][j].temperatura()-tmp.tab_pol_row[i][j].temperatura())/dl_row*wspulczynnik_dyfuzji*60;
-					tab.tab_pol_row[i][j].ref_energia_wew()+=dE;tab.tab_pol_row[i-1][j].ref_energia_wew()-=dE;
-				dE=(tmp.tab_pol_row[i-ilosc_poludnikow+1][j].temperatura()-tmp.tab_pol_row[i][j].temperatura())/dl_row*wspulczynnik_dyfuzji*60;
-					tab.tab_pol_row[i][j].ref_energia_wew()+=dE;tab.tab_pol_row[i-ilosc_poludnikow+1][j].ref_energia_wew()-=dE;
-				dE=(tmp.tab_pol_row[i-1][j-1].temperatura()-tmp.tab_pol_row[i][j].temperatura())/przekotna*wspulczynnik_dyfuzji*60;
-					tab.tab_pol_row[i][j].ref_energia_wew()+=dE;tab.tab_pol_row[i-1][j-1].ref_energia_wew()-=dE;
-				dE=(tmp.tab_pol_row[i][j-1].temperatura()-tmp.tab_pol_row[i][j].temperatura())/dl_row*wspulczynnik_dyfuzji*60;
-					tab.tab_pol_row[i][j].ref_energia_wew()+=dE;tab.tab_pol_row[i][j-1].ref_energia_wew()-=dE;
-				dE=(tmp.tab_pol_row[i-ilosc_poludnikow+1][j-1].temperatura()-tmp.tab_pol_row[i][j].temperatura())/przekotna*wspulczynnik_dyfuzji*60;	
-					tab.tab_pol_row[i][j].ref_energia_wew()+=dE;tab.tab_pol_row[i-ilosc_poludnikow+1][j-1].ref_energia_wew()-=dE;
-			}
-			//krance tab_pol_row tabelki
-			//[0][0]
-			int i=0,j=0;
- 
-			dl_pol=	tmp.tab_pol_row[0][0].ref_dlugosc_poludnikowa();
-			dl_row= tmp.tab_pol_row[0][0].ref_dlugosc_rownoleznikowa();
-			przekotna=sqrt(pow(dl_pol,2)+pow(dl_row,2));
-
-			dE=(tmp_b_polnocny.temperatura()-tmp.tab_pol_row[i][j].temperatura())/(2*przekotna+1)*wspulczynnik_dyfuzji*60;//(2*przekotna+1)---3 w jednym
-				tab.tab_pol_row[i][j].ref_energia_wew()+=dE;b_polnocny.ref_energia_wew()-=dE;
-
-			dE=(tmp.tab_pol_row[i+ilosc_poludnikow-1][j+1].temperatura()-tmp.tab_pol_row[i][j].temperatura())/przekotna*wspulczynnik_dyfuzji*60;
-				tab.tab_pol_row[i][j].ref_energia_wew()+=dE;tab.tab_pol_row[i+ilosc_poludnikow-1][j+1].ref_energia_wew()-=dE;
-			dE=(tmp.tab_pol_row[i][j+1].temperatura()-tmp.tab_pol_row[i][j].temperatura())/dl_row*wspulczynnik_dyfuzji*60;
-				tab.tab_pol_row[i][j].ref_energia_wew()+=dE;tab.tab_pol_row[i][j+1].ref_energia_wew()-=dE;
-			dE=(tmp.tab_pol_row[i+1][j+1].temperatura()-tmp.tab_pol_row[i][j].temperatura())/przekotna*wspulczynnik_dyfuzji*60;
-				tab.tab_pol_row[i][j].ref_energia_wew()+=dE;tab.tab_pol_row[i+1][j+1].ref_energia_wew()-=dE;
-			dE=(tmp.tab_pol_row[i+ilosc_poludnikow-1][j].temperatura()-tmp.tab_pol_row[i][j].temperatura())/dl_row*wspulczynnik_dyfuzji*60;
-				tab.tab_pol_row[i][j].ref_energia_wew()+=dE;tab.tab_pol_row[i+ilosc_poludnikow-1][j].ref_energia_wew()-=dE;
-			dE=(tmp.tab_pol_row[i+1][j].temperatura()-tmp.tab_pol_row[i][j].temperatura())/dl_row*wspulczynnik_dyfuzji*60;
-				tab.tab_pol_row[i][j].ref_energia_wew()+=dE;tab.tab_pol_row[i+1][j].ref_energia_wew()-=dE;
-			
-
-			//[0][ilosc_poludnikow-1]
-			i=0,j=ilosc_poludnikow-1;
-			
-
-			dE=(tmp_b_poludniowy.temperatura()-tmp.tab_pol_row[i][j].temperatura())/(2*przekotna+1)*wspulczynnik_dyfuzji*60;//(2*przekotna+1)---3 w jednym
-				tab.tab_pol_row[i][j].ref_energia_wew()+=dE;b_poludniowy.ref_energia_wew()-=dE;
-
-			dE=(tmp.tab_pol_row[i+ilosc_poludnikow-1][j+1].temperatura()-tmp.tab_pol_row[i][j].temperatura())/przekotna*wspulczynnik_dyfuzji*60;
-				tab.tab_pol_row[i][j].ref_energia_wew()+=dE;tab.tab_pol_row[i+ilosc_poludnikow-1][j+1].ref_energia_wew()-=dE;
-			dE=(tmp.tab_pol_row[i][j+1].temperatura()-tmp.tab_pol_row[i][j].temperatura())/dl_row*wspulczynnik_dyfuzji*60;
-				tab.tab_pol_row[i][j].ref_energia_wew()+=dE;tab.tab_pol_row[i][j+1].ref_energia_wew()-=dE;
-			dE=(tmp.tab_pol_row[i+1][j+1].temperatura()-tmp.tab_pol_row[i][j].temperatura())/przekotna*wspulczynnik_dyfuzji*60;
-				tab.tab_pol_row[i][j].ref_energia_wew()+=dE;tab.tab_pol_row[i+1][j+1].ref_energia_wew()-=dE;
-			dE=(tmp.tab_pol_row[i+ilosc_poludnikow-1][j].temperatura()-tmp.tab_pol_row[i][j].temperatura())/dl_row*wspulczynnik_dyfuzji*60;
-				tab.tab_pol_row[i][j].ref_energia_wew()+=dE;tab.tab_pol_row[i+ilosc_poludnikow-1][j].ref_energia_wew()-=dE;
-			dE=(tmp.tab_pol_row[i+1][j].temperatura()-tmp.tab_pol_row[i][j].temperatura())/dl_row*wspulczynnik_dyfuzji*60;
-				tab.tab_pol_row[i][j].ref_energia_wew()+=dE;tab.tab_pol_row[i+1][j].ref_energia_wew()-=dE;		
-			
-			//[ilosc_poludnikow-1][0]
-			i=ilosc_poludnikow-1,j=0;
-			
-
-			dE=(tmp_b_polnocny.temperatura()-tmp.tab_pol_row[i][j].temperatura())/(2*przekotna+1)*wspulczynnik_dyfuzji*60;//(2*przekotna+1)---3 w jednym
-				tab.tab_pol_row[i][j].ref_energia_wew()+=dE;b_polnocny.ref_energia_wew()-=dE;
-			
-				dE=(tmp.tab_pol_row[i-1][j+1].temperatura()-tmp.tab_pol_row[i][j].temperatura())/przekotna*wspulczynnik_dyfuzji*60;
-					tab.tab_pol_row[i][j].ref_energia_wew()+=dE;tab.tab_pol_row[i-1][j+1].ref_energia_wew()-=dE;
-				dE=(tmp.tab_pol_row[i][j+1].temperatura()-tmp.tab_pol_row[i][j].temperatura())/dl_row*wspulczynnik_dyfuzji*60;
-					tab.tab_pol_row[i][j].ref_energia_wew()+=dE;tab.tab_pol_row[i][j+1].ref_energia_wew()-=dE;
-				dE=(tmp.tab_pol_row[i-ilosc_poludnikow+1][j+1].temperatura()-tmp.tab_pol_row[i][j].temperatura())/przekotna*wspulczynnik_dyfuzji*60;
-					tab.tab_pol_row[i][j].ref_energia_wew()+=dE;tab.tab_pol_row[i-ilosc_poludnikow+1][j+1].ref_energia_wew()-=dE;
-				dE=(tmp.tab_pol_row[i-1][j].temperatura()-tmp.tab_pol_row[i][j].temperatura())/dl_row*wspulczynnik_dyfuzji*60;
-					tab.tab_pol_row[i][j].ref_energia_wew()+=dE;tab.tab_pol_row[i-1][j].ref_energia_wew()-=dE;
-				dE=(tmp.tab_pol_row[i-ilosc_poludnikow+1][j].temperatura()-tmp.tab_pol_row[i][j].temperatura())/dl_row*wspulczynnik_dyfuzji*60;
-					tab.tab_pol_row[i][j].ref_energia_wew()+=dE;tab.tab_pol_row[i-ilosc_poludnikow+1][j].ref_energia_wew()-=dE;
-				
-			
-			
-
-			//[ilosc_poludnikow-1][ilosc_rownoleznikow-1]
-			i=ilosc_poludnikow-1,j=ilosc_rownoleznikow-1;
-			
-
-			dE=(tmp_b_poludniowy.temperatura()-tmp.tab_pol_row[i][j].temperatura())/(2*przekotna+1)*wspulczynnik_dyfuzji*60;//(2*przekotna+1)---3 w jednym
-				tab.tab_pol_row[i][j].ref_energia_wew()+=dE;b_poludniowy.ref_energia_wew()-=dE;
-
-			
-				dE=(tmp.tab_pol_row[i-1][j].temperatura()-tmp.tab_pol_row[i][j].temperatura())/dl_row*wspulczynnik_dyfuzji*60;
-					tab.tab_pol_row[i][j].ref_energia_wew()+=dE;tab.tab_pol_row[i-1][j].ref_energia_wew()-=dE;
-				dE=(tmp.tab_pol_row[i-ilosc_poludnikow+1][j].temperatura()-tmp.tab_pol_row[i][j].temperatura())/dl_row*wspulczynnik_dyfuzji*60;
-					tab.tab_pol_row[i][j].ref_energia_wew()+=dE;tab.tab_pol_row[i-ilosc_poludnikow+1][j].ref_energia_wew()-=dE;
-				dE=(tmp.tab_pol_row[i-1][j-1].temperatura()-tmp.tab_pol_row[i][j].temperatura())/przekotna*wspulczynnik_dyfuzji*60;
-					tab.tab_pol_row[i][j].ref_energia_wew()+=dE;tab.tab_pol_row[i-1][j-1].ref_energia_wew()-=dE;
-				dE=(tmp.tab_pol_row[i][j-1].temperatura()-tmp.tab_pol_row[i][j].temperatura())/dl_row*wspulczynnik_dyfuzji*60;
-					tab.tab_pol_row[i][j].ref_energia_wew()+=dE;tab.tab_pol_row[i][j-1].ref_energia_wew()-=dE;
-				dE=(tmp.tab_pol_row[i-ilosc_poludnikow+1][j-1].temperatura()-tmp.tab_pol_row[i][j].temperatura())/przekotna*wspulczynnik_dyfuzji*60;	
-					tab.tab_pol_row[i][j].ref_energia_wew()+=dE;tab.tab_pol_row[i-ilosc_poludnikow+1][j-1].ref_energia_wew()-=dE;*/
-			
-
-
-}
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-void wymiana_ciepla_w_godz(Tablica_Pol& tab,Pole& b_polnocny,Pole& b_poludniowy)
-{
-	double wspulczynnik_dyfuzji=wsp_dyf;
-	Tablica_Pol tmp;
-	double dE,przekotna,dl_pol,dl_row;
-	for(int i=0;i<ilosc_poludnikow;++i)
-	for(int j=0;j<ilosc_rownoleznikow;++j)
-		{tmp.tab_pol_row[i][j]=tab.tab_pol_row[i][j];}
-
-	Pole tmp_b_polnocny(b_polnocny),tmp_b_poludniowy(b_poludniowy);
-	for(int i=1;i<ilosc_poludnikow-1;++i)
-		for(int j=1;j<ilosc_rownoleznikow-1;++j)
-			{
-				dl_pol=	tmp.tab_pol_row[i][j].ref_dlugosc_poludnikowa();
-				dl_row= tmp.tab_pol_row[i][j].ref_dlugosc_rownoleznikowa();
-				przekotna=sqrt(pow(dl_pol,2)+pow(dl_row,2));
-				dE=(tmp.tab_pol_row[i-1][j+1].temperatura()-tmp.tab_pol_row[i][j].temperatura())/przekotna*wspulczynnik_dyfuzji*3600;
-					tab.tab_pol_row[i][j].ref_energia_wew()+=dE;tab.tab_pol_row[i-1][j+1].ref_energia_wew()-=dE;
-				dE=(tmp.tab_pol_row[i][j+1].temperatura()-tmp.tab_pol_row[i][j].temperatura())/dl_row*wspulczynnik_dyfuzji*3600;
-					tab.tab_pol_row[i][j].ref_energia_wew()+=dE;tab.tab_pol_row[i][j+1].ref_energia_wew()-=dE;
-				dE=(tmp.tab_pol_row[i+1][j+1].temperatura()-tmp.tab_pol_row[i][j].temperatura())/przekotna*wspulczynnik_dyfuzji*3600;
-					tab.tab_pol_row[i][j].ref_energia_wew()+=dE;tab.tab_pol_row[i+1][j+1].ref_energia_wew()-=dE;
-				dE=(tmp.tab_pol_row[i-1][j].temperatura()-tmp.tab_pol_row[i][j].temperatura())/dl_row*wspulczynnik_dyfuzji*3600;
-					tab.tab_pol_row[i][j].ref_energia_wew()+=dE;tab.tab_pol_row[i-1][j].ref_energia_wew()-=dE;
-				dE=(tmp.tab_pol_row[i+1][j].temperatura()-tmp.tab_pol_row[i][j].temperatura())/dl_row*wspulczynnik_dyfuzji*3600;
-					tab.tab_pol_row[i][j].ref_energia_wew()+=dE;tab.tab_pol_row[i+1][j].ref_energia_wew()-=dE;
-				dE=(tmp.tab_pol_row[i-1][j-1].temperatura()-tmp.tab_pol_row[i][j].temperatura())/przekotna*wspulczynnik_dyfuzji*3600;
-					tab.tab_pol_row[i][j].ref_energia_wew()+=dE;tab.tab_pol_row[i-1][j-1].ref_energia_wew()-=dE;
-				dE=(tmp.tab_pol_row[i][j-1].temperatura()-tmp.tab_pol_row[i][j].temperatura())/dl_row*wspulczynnik_dyfuzji*3600;
-					tab.tab_pol_row[i][j].ref_energia_wew()+=dE;tab.tab_pol_row[i][j-1].ref_energia_wew()-=dE;
-				dE=(tmp.tab_pol_row[i+1][j-1].temperatura()-tmp.tab_pol_row[i][j].temperatura())/przekotna*wspulczynnik_dyfuzji*3600;	
-					tab.tab_pol_row[i][j].ref_energia_wew()+=dE;tab.tab_pol_row[i+1][j-1].ref_energia_wew()-=dE;
-			}
-//brzegi bez tab_pol_row tabelki bez samych krancow krance na koncu
-	/*for(int i=1;i<ilosc_poludnikow-1;++i)
-		{
-			int j=0;
-			dl_pol=	tmp.tab_pol_row[i][j].ref_dlugosc_poludnikowa();
-			dl_row= tmp.tab_pol_row[i][j].ref_dlugosc_rownoleznikowa();
-			przekotna=sqrt(pow(dl_pol,2)+pow(dl_row,2));
-			dE=(tmp_b_polnocny.temperatura()-tmp.tab_pol_row[i][j].temperatura())/(2*przekotna+1)*wspulczynnik_dyfuzji*3600;//(2*przekotna+1)---3 w jednym
-				tab.tab_pol_row[i][j].ref_energia_wew()+=dE;b_polnocny.ref_energia_wew()-=dE;
-			dE=(tmp.tab_pol_row[i-1][j].temperatura()-tmp.tab_pol_row[i][j].temperatura())/dl_row*wspulczynnik_dyfuzji*3600;
-				tab.tab_pol_row[i][j].ref_energia_wew()+=dE;tab.tab_pol_row[i-1][j].ref_energia_wew()-=dE;
-			dE=(tmp.tab_pol_row[i+1][j].temperatura()-tmp.tab_pol_row[i][j].temperatura())/dl_row*wspulczynnik_dyfuzji*3600;
-				tab.tab_pol_row[i][j].ref_energia_wew()+=dE;tab.tab_pol_row[i+1][j].ref_energia_wew()-=dE;
-			dE=(tmp.tab_pol_row[i-1][j+1].temperatura()-tmp.tab_pol_row[i][j].temperatura())/przekotna*wspulczynnik_dyfuzji*3600;
-				tab.tab_pol_row[i][j].ref_energia_wew()+=dE;tab.tab_pol_row[i-1][j+1].ref_energia_wew()-=dE;
-			dE=(tmp.tab_pol_row[i][j+1].temperatura()-tmp.tab_pol_row[i][j].temperatura())/dl_row*wspulczynnik_dyfuzji*3600;
-				tab.tab_pol_row[i][j].ref_energia_wew()+=dE;tab.tab_pol_row[i][j+1].ref_energia_wew()-=dE;
-			dE=(tmp.tab_pol_row[i+1][j+1].temperatura()-tmp.tab_pol_row[i][j].temperatura())/przekotna*wspulczynnik_dyfuzji*3600;
-				tab.tab_pol_row[i][j].ref_energia_wew()+=dE;tab.tab_pol_row[i+1][j+1].ref_energia_wew()-=dE;
-				
-			j=ilosc_rownoleznikow-2;//j=ilosc_rownoleznikow-1;----------drugi biegun	
-			dE=(tmp_b_poludniowy.temperatura()-tmp.tab_pol_row[i][j].temperatura())/(2*przekotna+1)*wspulczynnik_dyfuzji*3600;//(2*przekotna+1)---3 w jednym
-				tab.tab_pol_row[i][j].ref_energia_wew()+=dE;b_poludniowy.ref_energia_wew()-=dE;
-			dE=(tmp.tab_pol_row[i-1][j].temperatura()-tmp.tab_pol_row[i][j].temperatura())/dl_row*wspulczynnik_dyfuzji*3600;
-				tab.tab_pol_row[i][j].ref_energia_wew()+=dE;tab.tab_pol_row[i-1][j].ref_energia_wew()-=dE;
-			dE=(tmp.tab_pol_row[i+1][j].temperatura()-tmp.tab_pol_row[i][j].temperatura())/dl_row*wspulczynnik_dyfuzji*3600;
-				tab.tab_pol_row[i][j].ref_energia_wew()+=dE;tab.tab_pol_row[i+1][j].ref_energia_wew()-=dE;
-			dE=(tmp.tab_pol_row[i-1][j-1].temperatura()-tmp.tab_pol_row[i][j].temperatura())/przekotna*wspulczynnik_dyfuzji*3600;
-				tab.tab_pol_row[i][j].ref_energia_wew()+=dE;tab.tab_pol_row[i-1][j-1].ref_energia_wew()-=dE;
-			dE=(tmp.tab_pol_row[i][j-1].temperatura()-tmp.tab_pol_row[i][j].temperatura())/dl_row*wspulczynnik_dyfuzji*3600;
-				tab.tab_pol_row[i][j].ref_energia_wew()+=dE;tab.tab_pol_row[i][j-1].ref_energia_wew()-=dE;
-			dE=(tmp.tab_pol_row[i+1][j-1].temperatura()-tmp.tab_pol_row[i][j].temperatura())/przekotna*wspulczynnik_dyfuzji*3600;	
-				tab.tab_pol_row[i][j].ref_energia_wew()+=dE;tab.tab_pol_row[i+1][j-1].ref_energia_wew()-=dE;
-		}
-
-		for(int j=1;j<ilosc_rownoleznikow-1;++j)
-			{
-				int i=0;
-				dl_pol=	tmp.tab_pol_row[i][j].ref_dlugosc_poludnikowa();
-				dl_row= tmp.tab_pol_row[i][j].ref_dlugosc_rownoleznikowa();
-				przekotna=sqrt(pow(dl_pol,2)+pow(dl_row,2));
-				dE=(tmp.tab_pol_row[i+ilosc_poludnikow-1][j+1].temperatura()-tmp.tab_pol_row[i][j].temperatura())/przekotna*wspulczynnik_dyfuzji*3600;
-					tab.tab_pol_row[i][j].ref_energia_wew()+=dE;tab.tab_pol_row[i+ilosc_poludnikow-1][j+1].ref_energia_wew()-=dE;
-				dE=(tmp.tab_pol_row[i][j+1].temperatura()-tmp.tab_pol_row[i][j].temperatura())/dl_row*wspulczynnik_dyfuzji*3600;
-					tab.tab_pol_row[i][j].ref_energia_wew()+=dE;tab.tab_pol_row[i][j+1].ref_energia_wew()-=dE;
-				dE=(tmp.tab_pol_row[i+1][j+1].temperatura()-tmp.tab_pol_row[i][j].temperatura())/przekotna*wspulczynnik_dyfuzji*3600;
-					tab.tab_pol_row[i][j].ref_energia_wew()+=dE;tab.tab_pol_row[i+1][j+1].ref_energia_wew()-=dE;
-				dE=(tmp.tab_pol_row[i+ilosc_poludnikow-1][j].temperatura()-tmp.tab_pol_row[i][j].temperatura())/dl_row*wspulczynnik_dyfuzji*3600;
-					tab.tab_pol_row[i][j].ref_energia_wew()+=dE;tab.tab_pol_row[i+ilosc_poludnikow-1][j].ref_energia_wew()-=dE;
-				dE=(tmp.tab_pol_row[i+1][j].temperatura()-tmp.tab_pol_row[i][j].temperatura())/dl_row*wspulczynnik_dyfuzji*3600;
-					tab.tab_pol_row[i][j].ref_energia_wew()+=dE;tab.tab_pol_row[i+1][j].ref_energia_wew()-=dE;
-				dE=(tmp.tab_pol_row[i+ilosc_poludnikow-1][j-1].temperatura()-tmp.tab_pol_row[i][j].temperatura())/przekotna*wspulczynnik_dyfuzji*3600;
-					tab.tab_pol_row[i][j].ref_energia_wew()+=dE;tab.tab_pol_row[i+ilosc_poludnikow-1][j-1].ref_energia_wew()-=dE;
-				dE=(tmp.tab_pol_row[i][j-1].temperatura()-tmp.tab_pol_row[i][j].temperatura())/dl_row*wspulczynnik_dyfuzji*3600;
-					tab.tab_pol_row[i][j].ref_energia_wew()+=dE;tab.tab_pol_row[i][j-1].ref_energia_wew()-=dE;
-				dE=(tmp.tab_pol_row[i+1][j-1].temperatura()-tmp.tab_pol_row[i][j].temperatura())/przekotna*wspulczynnik_dyfuzji*3600;	
-					tab.tab_pol_row[i][j].ref_energia_wew()+=dE;tab.tab_pol_row[i+1][j-1].ref_energia_wew()-=dE;
-				i=ilosc_poludnikow-1;//i=ilosc_rownoleznikow-1;-----druda strona poludnika 0
-				dE=(tmp.tab_pol_row[i-1][j+1].temperatura()-tmp.tab_pol_row[i][j].temperatura())/przekotna*wspulczynnik_dyfuzji*3600;
-					tab.tab_pol_row[i][j].ref_energia_wew()+=dE;tab.tab_pol_row[i-1][j+1].ref_energia_wew()-=dE;
-				dE=(tmp.tab_pol_row[i][j+1].temperatura()-tmp.tab_pol_row[i][j].temperatura())/dl_row*wspulczynnik_dyfuzji*3600;
-					tab.tab_pol_row[i][j].ref_energia_wew()+=dE;tab.tab_pol_row[i][j+1].ref_energia_wew()-=dE;
-				dE=(tmp.tab_pol_row[i-ilosc_poludnikow+1][j+1].temperatura()-tmp.tab_pol_row[i][j].temperatura())/przekotna*wspulczynnik_dyfuzji*3600;
-					tab.tab_pol_row[i][j].ref_energia_wew()+=dE;tab.tab_pol_row[i-ilosc_poludnikow+1][j+1].ref_energia_wew()-=dE;
-				dE=(tmp.tab_pol_row[i-1][j].temperatura()-tmp.tab_pol_row[i][j].temperatura())/dl_row*wspulczynnik_dyfuzji*3600;
-					tab.tab_pol_row[i][j].ref_energia_wew()+=dE;tab.tab_pol_row[i-1][j].ref_energia_wew()-=dE;
-				dE=(tmp.tab_pol_row[i-ilosc_poludnikow+1][j].temperatura()-tmp.tab_pol_row[i][j].temperatura())/dl_row*wspulczynnik_dyfuzji*3600;
-					tab.tab_pol_row[i][j].ref_energia_wew()+=dE;tab.tab_pol_row[i-ilosc_poludnikow+1][j].ref_energia_wew()-=dE;
-				dE=(tmp.tab_pol_row[i-1][j-1].temperatura()-tmp.tab_pol_row[i][j].temperatura())/przekotna*wspulczynnik_dyfuzji*3600;
-					tab.tab_pol_row[i][j].ref_energia_wew()+=dE;tab.tab_pol_row[i-1][j-1].ref_energia_wew()-=dE;
-				dE=(tmp.tab_pol_row[i][j-1].temperatura()-tmp.tab_pol_row[i][j].temperatura())/dl_row*wspulczynnik_dyfuzji*3600;
-					tab.tab_pol_row[i][j].ref_energia_wew()+=dE;tab.tab_pol_row[i][j-1].ref_energia_wew()-=dE;
-				dE=(tmp.tab_pol_row[i-ilosc_poludnikow+1][j-1].temperatura()-tmp.tab_pol_row[i][j].temperatura())/przekotna*wspulczynnik_dyfuzji*3600;	
-					tab.tab_pol_row[i][j].ref_energia_wew()+=dE;tab.tab_pol_row[i-ilosc_poludnikow+1][j-1].ref_energia_wew()-=dE;
-			}
-			//krance tab_pol_row tabelki
-			//[0][0]
-			int i=0,j=0;
- 
-			dl_pol=	tmp.tab_pol_row[0][0].ref_dlugosc_poludnikowa();
-			dl_row= tmp.tab_pol_row[0][0].ref_dlugosc_rownoleznikowa();
-			przekotna=sqrt(pow(dl_pol,2)+pow(dl_row,2));
-
-			dE=(tmp_b_polnocny.temperatura()-tmp.tab_pol_row[i][j].temperatura())/(2*przekotna+1)*wspulczynnik_dyfuzji*60;//(2*przekotna+1)---3 w jednym
-				tab.tab_pol_row[i][j].ref_energia_wew()+=dE;b_polnocny.ref_energia_wew()-=dE;
-
-			dE=(tmp.tab_pol_row[i+ilosc_poludnikow-1][j+1].temperatura()-tmp.tab_pol_row[i][j].temperatura())/przekotna*wspulczynnik_dyfuzji*3600;
-				tab.tab_pol_row[i][j].ref_energia_wew()+=dE;tab.tab_pol_row[i+ilosc_poludnikow-1][j+1].ref_energia_wew()-=dE;
-			dE=(tmp.tab_pol_row[i][j+1].temperatura()-tmp.tab_pol_row[i][j].temperatura())/dl_row*wspulczynnik_dyfuzji*3600;
-				tab.tab_pol_row[i][j].ref_energia_wew()+=dE;tab.tab_pol_row[i][j+1].ref_energia_wew()-=dE;
-			dE=(tmp.tab_pol_row[i+1][j+1].temperatura()-tmp.tab_pol_row[i][j].temperatura())/przekotna*wspulczynnik_dyfuzji*3600;
-				tab.tab_pol_row[i][j].ref_energia_wew()+=dE;tab.tab_pol_row[i+1][j+1].ref_energia_wew()-=dE;
-			dE=(tmp.tab_pol_row[i+ilosc_poludnikow-1][j].temperatura()-tmp.tab_pol_row[i][j].temperatura())/dl_row*wspulczynnik_dyfuzji*3600;
-				tab.tab_pol_row[i][j].ref_energia_wew()+=dE;tab.tab_pol_row[i+ilosc_poludnikow-1][j].ref_energia_wew()-=dE;
-			dE=(tmp.tab_pol_row[i+1][j].temperatura()-tmp.tab_pol_row[i][j].temperatura())/dl_row*wspulczynnik_dyfuzji*3600;
-				tab.tab_pol_row[i][j].ref_energia_wew()+=dE;tab.tab_pol_row[i+1][j].ref_energia_wew()-=dE;
-			
-
-			//[0][ilosc_poludnikow-1]
-			i=0,j=ilosc_poludnikow-1;
-			
-
-			dE=(tmp_b_poludniowy.temperatura()-tmp.tab_pol_row[i][j].temperatura())/(2*przekotna+1)*wspulczynnik_dyfuzji*3600;//(2*przekotna+1)---3 w jednym
-				tab.tab_pol_row[i][j].ref_energia_wew()+=dE;b_poludniowy.ref_energia_wew()-=dE;
-
-			dE=(tmp.tab_pol_row[i+ilosc_poludnikow-1][j+1].temperatura()-tmp.tab_pol_row[i][j].temperatura())/przekotna*wspulczynnik_dyfuzji*3600;
-				tab.tab_pol_row[i][j].ref_energia_wew()+=dE;tab.tab_pol_row[i+ilosc_poludnikow-1][j+1].ref_energia_wew()-=dE;
-			dE=(tmp.tab_pol_row[i][j+1].temperatura()-tmp.tab_pol_row[i][j].temperatura())/dl_row*wspulczynnik_dyfuzji*3600;
-				tab.tab_pol_row[i][j].ref_energia_wew()+=dE;tab.tab_pol_row[i][j+1].ref_energia_wew()-=dE;
-			dE=(tmp.tab_pol_row[i+1][j+1].temperatura()-tmp.tab_pol_row[i][j].temperatura())/przekotna*wspulczynnik_dyfuzji*3600;
-				tab.tab_pol_row[i][j].ref_energia_wew()+=dE;tab.tab_pol_row[i+1][j+1].ref_energia_wew()-=dE;
-			dE=(tmp.tab_pol_row[i+ilosc_poludnikow-1][j].temperatura()-tmp.tab_pol_row[i][j].temperatura())/dl_row*wspulczynnik_dyfuzji*3600;
-				tab.tab_pol_row[i][j].ref_energia_wew()+=dE;tab.tab_pol_row[i+ilosc_poludnikow-1][j].ref_energia_wew()-=dE;
-			dE=(tmp.tab_pol_row[i+1][j].temperatura()-tmp.tab_pol_row[i][j].temperatura())/dl_row*wspulczynnik_dyfuzji*3600;
-				tab.tab_pol_row[i][j].ref_energia_wew()+=dE;tab.tab_pol_row[i+1][j].ref_energia_wew()-=dE;		
-			
-			//[ilosc_poludnikow-1][0]
-			i=ilosc_poludnikow-1,j=0;
-			
-
-			dE=(tmp_b_polnocny.temperatura()-tmp.tab_pol_row[i][j].temperatura())/(2*przekotna+1)*wspulczynnik_dyfuzji*3600;//(2*przekotna+1)---3 w jednym
-				tab.tab_pol_row[i][j].ref_energia_wew()+=dE;b_polnocny.ref_energia_wew()-=dE;
-			
-				dE=(tmp.tab_pol_row[i-1][j+1].temperatura()-tmp.tab_pol_row[i][j].temperatura())/przekotna*wspulczynnik_dyfuzji*3600;
-					tab.tab_pol_row[i][j].ref_energia_wew()+=dE;tab.tab_pol_row[i-1][j+1].ref_energia_wew()-=dE;
-				dE=(tmp.tab_pol_row[i][j+1].temperatura()-tmp.tab_pol_row[i][j].temperatura())/dl_row*wspulczynnik_dyfuzji*3600;
-					tab.tab_pol_row[i][j].ref_energia_wew()+=dE;tab.tab_pol_row[i][j+1].ref_energia_wew()-=dE;
-				dE=(tmp.tab_pol_row[i-ilosc_poludnikow+1][j+1].temperatura()-tmp.tab_pol_row[i][j].temperatura())/przekotna*wspulczynnik_dyfuzji*3600;
-					tab.tab_pol_row[i][j].ref_energia_wew()+=dE;tab.tab_pol_row[i-ilosc_poludnikow+1][j+1].ref_energia_wew()-=dE;
-				dE=(tmp.tab_pol_row[i-1][j].temperatura()-tmp.tab_pol_row[i][j].temperatura())/dl_row*wspulczynnik_dyfuzji*3600;
-					tab.tab_pol_row[i][j].ref_energia_wew()+=dE;tab.tab_pol_row[i-1][j].ref_energia_wew()-=dE;
-				dE=(tmp.tab_pol_row[i-ilosc_poludnikow+1][j].temperatura()-tmp.tab_pol_row[i][j].temperatura())/dl_row*wspulczynnik_dyfuzji*3600;
-					tab.tab_pol_row[i][j].ref_energia_wew()+=dE;tab.tab_pol_row[i-ilosc_poludnikow+1][j].ref_energia_wew()-=dE;
-				
-			
-			
-
-			//[ilosc_poludnikow-1][ilosc_rownoleznikow-1]
-			i=ilosc_poludnikow-1,j=ilosc_rownoleznikow-1;
-			
-
-			dE=(tmp_b_poludniowy.temperatura()-tmp.tab_pol_row[i][j].temperatura())/(2*przekotna+1)*wspulczynnik_dyfuzji*3600;//(2*przekotna+1)---3 w jednym
-				tab.tab_pol_row[i][j].ref_energia_wew()+=dE;b_poludniowy.ref_energia_wew()-=dE;
-
-			
-				dE=(tmp.tab_pol_row[i-1][j].temperatura()-tmp.tab_pol_row[i][j].temperatura())/dl_row*wspulczynnik_dyfuzji*3600;
-					tab.tab_pol_row[i][j].ref_energia_wew()+=dE;tab.tab_pol_row[i-1][j].ref_energia_wew()-=dE;
-				dE=(tmp.tab_pol_row[i-ilosc_poludnikow+1][j].temperatura()-tmp.tab_pol_row[i][j].temperatura())/dl_row*wspulczynnik_dyfuzji*3600;
-					tab.tab_pol_row[i][j].ref_energia_wew()+=dE;tab.tab_pol_row[i-ilosc_poludnikow+1][j].ref_energia_wew()-=dE;
-				dE=(tmp.tab_pol_row[i-1][j-1].temperatura()-tmp.tab_pol_row[i][j].temperatura())/przekotna*wspulczynnik_dyfuzji*3600;
-					tab.tab_pol_row[i][j].ref_energia_wew()+=dE;tab.tab_pol_row[i-1][j-1].ref_energia_wew()-=dE;
-				dE=(tmp.tab_pol_row[i][j-1].temperatura()-tmp.tab_pol_row[i][j].temperatura())/dl_row*wspulczynnik_dyfuzji*3600;
-					tab.tab_pol_row[i][j].ref_energia_wew()+=dE;tab.tab_pol_row[i][j-1].ref_energia_wew()-=dE;
-				dE=(tmp.tab_pol_row[i-ilosc_poludnikow+1][j-1].temperatura()-tmp.tab_pol_row[i][j].temperatura())/przekotna*wspulczynnik_dyfuzji*3600;	
-					tab.tab_pol_row[i][j].ref_energia_wew()+=dE;tab.tab_pol_row[i-ilosc_poludnikow+1][j-1].ref_energia_wew()-=dE;*/
-			
-
-
-}
-
-
 
 
 

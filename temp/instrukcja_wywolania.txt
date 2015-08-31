@@ -1,0 +1,47 @@
+To s¹ wrtoœci którymi wype³niam jak nie wype³niam ich argumentami maina:
+
+ilosc_poludnikow=100;
+ilosc_rownoleznikow=100;
+promien_ziemi=6300;
+pi=3.1415;
+szerokosc_kontowa_biegunow_przez_2=0.01;
+stala_sloneczna=1300;
+stala_Stefana_Boltzmana=5*pow(10,-8);
+wspulczynnik_reemisji=0.8;
+wsp_dyf=0.5;
+fun_slonce=1;
+fun_emisja=1;
+fun_wymiana_ciepla=0;
+albedo_parametr_lad=0.2;
+albedo_parametr_morze=0.5;
+albedo_rodzaj=0;
+ilosc_wywolan=1000;
+cieplo_wlasciwe_lad=10000;
+cieplo_wlasciwe_morze=30000; 
+
+
+tak zwykle wywolywalem ewentualnie z mniejsza l. wywolan tutaj 20000
+ ./main 100 100 1300 0.8 0.5 1 1 0 0.2 0.6 0 20000 5000 30000 
+
+
+Troche sie pozmienia³o powsta³a mapa œwiata w pliku 'swiat.txt'
+
+To s¹ kolejne argumenty:
+
+if(argc>1)ilosc_poludnikow=atoi(argv[1]);
+if(argc>2)ilosc_rownoleznikow=atoi(argv[2]);
+if(argc>3)stala_sloneczna=atoi(argv[3]);
+if(argc>4)wspulczynnik_reemisji=atoi(argv[4]);
+if(argc>5)wsp_dyf=atoi(argv[5]);
+if(argc>6)fun_slonce=atoi(argv[6]);
+if(argc>7)fun_emisja=atoi(argv[7]);
+if(argc>8)fun_wymiana_ciepla=atoi(argv[8]);
+if(argc>9)albedo_parametr_lad=atoi(argv[9]);
+if(argc>9)albedo_parametr_morze=atoi(argv[10]);
+if(argc>10)albedo_rodzaj=atoi(argv[11]);
+if(argc>11)ilosc_wywolan=atoi(argv[12]);
+if(argc>12)cieplo_wlasciwe_lad=atoi(argv[13]);
+if(argc>12)cieplo_wlasciwe_morze=atoi(argv[14]);
+
+
+

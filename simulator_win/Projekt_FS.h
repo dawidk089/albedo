@@ -1,3 +1,8 @@
+
+using namespace std;
+
+//#pragma once
+
 #include <iostream>
 #include <fstream>
 #include <string>
@@ -31,8 +36,12 @@ extern double albedo_parametr_lad;
 extern double albedo_parametr_morze;
 extern int albedo_rodzaj;
 extern int ilosc_wywolan;
-extern int cieplo_wlasciwe_lad;
-extern int cieplo_wlasciwe_morze;
+extern double cieplo_wlasciwe_lad;
+extern double cieplo_wlasciwe_morze;
+extern int czyt_mape_swiata;
+extern bool fun_czytaj;
+extern int aargc;
+extern char ** aargv;
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
 /*
 Spis tresci (kolejnosc definicji deklaracji klas/funkcji/stalych globalnych w kodzie:
@@ -49,9 +58,7 @@ klasy:
 
 
 
-using namespace std;
 
-#pragma once
 
 class Czas
 {
@@ -69,6 +76,9 @@ public:
 	void zwieksz_godzine();
 	void zwieksz_minute();
 	string rok_dzien_godzina_minuta();
+	double rok_dzien_godzina_minuta(int);
+	void zapisz_czas(string naz_pli);
+	void czytaj_czas(string naz_pli);
 
 
 	double& ref_dni_w_roku();
@@ -92,6 +102,9 @@ private:
 	double dlugosc_rownoleznikowa;
 	double pole_powiezchni;
 	int rodz_powierzchni;
+
+	int index_pol(int nr);
+	int index_row(int nr);
 	
 
 public:
@@ -105,7 +118,7 @@ double poludnik();
 double rownoleznik();
 
 double temperatura();
-
+ 
 double albedo_od_T();
 
 double C_wlasciwe();
@@ -133,6 +146,9 @@ public:
 
 
 	Tablica_Pol();
+	double srednia_temperatura();
+	double srednie_albedo();
+	pair<double,double> temperatura_min_max();
 
 };
 
@@ -147,10 +163,12 @@ void emisja_w_godz(Tablica_Pol& tab,Pole& b_polnocny,Pole& b_poludniowy);
 void wymiana_ciepla_w_godz(Tablica_Pol& tab,Pole& b_polnocny,Pole& b_poludniowy);
 void akcja_w_godz(Tablica_Pol& tab,Pole& b_polnocny,Pole& b_poludniowy, Czas& czas, int ilosc_wywolan);
 
-bool zapisz(const string,Tablica_Pol&,const Pole&,const Pole&);
-bool czytaj(const string,Tablica_Pol&,const Pole&,const Pole&);
+bool zapisz(const string,Tablica_Pol&,const Pole&,const Pole&,Czas& czas);
+bool czytaj(const string,Tablica_Pol&,const Pole&,const Pole&,Czas& czas);
 bool rysuj_ziemie_jako_jajko(const string,Tablica_Pol&);
 bool czytaj_mape_swiata(const string,Tablica_Pol&);
+bool zapisuj_temperature_srednio_i_arg_wywolania(const string,Tablica_Pol&,Czas&, int);
+
 
 class wektor
 {
@@ -163,18 +181,5 @@ public:
 	double operator* (wektor);
 	
 };
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 

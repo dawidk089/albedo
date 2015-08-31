@@ -1,0 +1,29 @@
+line: b'rok: <year>66</year> dzien roku: <day>148</day> godzina: <time>24:0</time> \r\n'
+line: b'\r\n'
+line: b'temperatura minimalna: \t<min_temp>-82.6267/min_temp>\r\n'
+line: b'temperatura maksymalna:\t<max_temp>86.1485/max_temp>\r\n'
+line: b'srednia temperatura:   \t<avr_temp>23.2572</avr_temp>\r\n'
+line: b'srednie albedo:        \t<avr_albe>0.296272</avr_albe>\r\n'
+
+--------------------------------------------------------------------------------
+
+main_wojtek.exe 100 100 1300 0.52 300 1 1 1 0.34 0.27 3 10 100000 300000 0 \r\n
+
+po kolei:
+
+ilosc poludnikow
+ilosc rownoleznikow
+stala sloneczna
+wsp reemisji
+wsp dyfuzji
+slonce {0,1}
+emisja {0,1}
+przewodnictwo {0,1}
+wsp albedo dla ladu
+wsp albedo dla morza
+tryb albedo {1,2,3,4}
+ilosc wywolan
+cieplo wlasciwe ladu
+cieplo wlasciwe morza
+wczytywanie poprzedniej mapy {0,1}
+

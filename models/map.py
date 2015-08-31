@@ -27,9 +27,9 @@ class Map(QtGui.QWidget):
                 ))
                 """
                 temp_tab.append(qRgb(
-                    255-int((item_pix['r']-t_min)/t_range*255),
+                    int((item_pix['r']-t_min)/t_range*255),
                     0,
-                    int((item_pix['g']-t_min)/t_range*255),
+                    255-int((item_pix['g']-t_min)/t_range*255),
                 ))
             self.pixel.append(temp_tab)
 

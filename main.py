@@ -12,6 +12,8 @@ class Main(QtGui.QMainWindow):
     def __init__(self, parent=None):
         super(Main, self).__init__(parent)
 
+        self.x = 'makarena'
+
         #sciezki
         self.path = Paths('apka')
         print('path in main:', self.path.path)
@@ -25,7 +27,8 @@ class Main(QtGui.QMainWindow):
         self.setWindowIcon(QtGui.QIcon('../image/app_ico.png'))
         self.setWindowTitle('World albedo')
         #self.resize(800, 600)
-        self.showFullScreen()
+        #self.showFullScreen()
+        self.showMaximized()
         self.center()
         self.stacked_widget.addWidget(main_window)
 
