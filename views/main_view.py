@@ -436,8 +436,10 @@ class MainWindow(QtGui.QWidget):
         else:
             self.wywolanie.calls_parameters['czyt_mape_swiata'] = 0
 
-
         self.wywolanie.run()
+
+        #tymczasowo przerwanie funkcji
+        return
 
         # tutaj ustawianie wartosci
 
